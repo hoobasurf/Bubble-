@@ -13,7 +13,7 @@
     <link rel="apple-touch-icon" href="/icon-192.png">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; position: relative; overflow-x: hidden; transition: background 0.8s ease; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; overflow: hidden; position: relative; transition: background 0.8s ease; }
         body.theme-zen      { background: linear-gradient(135deg,#e0f7fa,#b2ebf2,#80deea); }
         body.theme-plage    { background: linear-gradient(135deg,#ffd89b,#f4a460,#19547b); }
         body.theme-foret    { background: linear-gradient(135deg,#134e5e,#3a7e6f,#71b280); }
@@ -26,7 +26,7 @@
         .particles { position:fixed; inset:0; pointer-events:none; z-index:0; }
         .particle  { position:absolute; width:3px; height:3px; background:rgba(255,255,255,.5); border-radius:50%; animation:float 20s infinite ease-in-out; }
         @keyframes float { 0%,100%{transform:translateY(0) translateX(0);opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{transform:translateY(-100vh) translateX(50px);opacity:0} }
-        .app-wrapper { position:relative; z-index:1; max-width:1500px; margin:0 auto; padding:20px; min-height:100vh; display:flex; flex-direction:column; gap:20px; }
+        .app-wrapper { position:relative; z-index:1; max-width:1500px; margin:0 auto; padding:20px; height:100vh; display:flex; flex-direction:column; gap:20px; overflow:hidden; }
         .chat-header { background:rgba(255,255,255,.05); backdrop-filter:blur(10px); border-radius:20px; padding:14px 28px; border:1px solid rgba(255,255,255,.15); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
         .theme-selector { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
         .theme-label    { color:white; font-weight:600; text-shadow:0 2px 5px rgba(0,0,0,.3); }
