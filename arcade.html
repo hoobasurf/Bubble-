@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BubbleArcade 🕹️</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:#0a0a0f; --surface:#111118; --card:#16161f;
+  --accent1:#ff6b9d; --accent2:#c06fff; --accent3:#4ecdc4;
+  --gold:#ffd700; --text:#f0f0ff; --muted:rgba(240,240,255,.45);
+}
+body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-serif; min-height:100vh; overflow-x:hidden; }
+body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px); }
+.header { position:sticky; top:0; z-index:100; padding:16px 40px; display:flex; align-items:center; justify-content:space-between; background:linear-gradient(to bottom,rgba(10,10,15,1) 0%,rgba(10,10,15,0) 100%); }
+.logo { font-family:'Press Start 2P',monospace; font-size:18px; background:linear-gradient(135deg,var(--accent1),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; filter:drop-shadow(0 0 20px rgba(255,107,157,.5)); letter-spacing:1px; }
+.back-btn { display:flex; align-items:center; gap:8px; padding:10px 22px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:50px; color:var(--text); font-size:15px; font-weight:600; cursor:pointer; text-decoration:none; transition:all .25s; font-family:'Rajdhani',sans-serif; }
+.back-btn:hover { background:rgba(255,255,255,.12); transform:translateY(-1px); }
+.hero { position:relative; padding:60px 40px 40px; overflow:hidden; }
+.hero-bg { position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at 20% 50%,rgba(255,107,157,.12) 0%,transparent 70%),radial-gradient(ellipse 60% 80% at 80% 30%,rgba(192,111,255,.1) 0%,transparent 70%); }
+.hero-content { position:relative; z-index:1; max-width:560px; }
+.hero-tag { display:inline-block; padding:5px 14px; background:rgba(255,107,157,.15); border:1px solid rgba(255,107,157,.35); border-radius:4px; font-size:12px; font-weight:700; letter-spacing:2px; color:var(--accent1); text-transform:uppercase; margin-bottom:18px; }
+.hero-title { font-family:'Press Start 2P',monospace; font-size:clamp(22px,4vw,38px); line-height:1.5; margin-bottom:16px; background:linear-gradient(135deg,#fff 30%,rgba(255,255,255,.6)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.hero-sub { font-size:18px; color:var(--muted); line-height:1.6; margin-bottom:30px; font-weight:400; }
+.hero-stats { display:flex; gap:30px; flex-wrap:wrap; }
+.stat { text-align:center; }
+.stat-val { font-family:'Press Start 2P',monospace; font-size:22px; color:var(--gold); display:block; }
+.stat-lbl { font-size:13px; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:1px; }
+.section { padding:10px 40px 40px; position:relative; z-index:1; }
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+.section-title { font-family:'Press Start 2P',monospace; font-size:13px; color:var(--text); display:flex; align-items:center; gap:12px; }
+.section-title::before { content:''; display:inline-block; width:4px; height:18px; background:linear-gradient(to bottom,var(--accent1),var(--accent2)); border-radius:2px; }
+.carousel-wrap { position:relative; }
+.carousel { display:flex; gap:18px; overflow-x:auto; overflow-y:visible; padding-bottom:16px; padding-top:8px; scroll-snap-type:x mandatory; scrollbar-width:none; }
+.carousel::-webkit-scrollbar { display:none; }
+.game-card { flex-shrink:0; width:280px; border-radius:16px; overflow:visible; cursor:pointer; scroll-snap-align:start; transition:transform .35s cubic-bezier(.34,1.56,.64,1); position:relative; }
+.game-card:hover { transform:scale(1.06) translateY(-8px); }
+.game-card:hover .card-glow { opacity:1; }
+.game-card:hover .card-overlay { opacity:1; }
+.game-card:hover .play-ring { transform:scale(1); opacity:1; }
+.card-glow { position:absolute; inset:-2px; border-radius:18px; opacity:0; transition:opacity .3s; background:linear-gradient(135deg,var(--accent1),var(--accent2)); z-index:-1; filter:blur(8px); }
+.card-img { width:100%; aspect-ratio:16/10; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,.06); }
+.card-thumb-emoji { font-size:72px; z-index:1; filter:drop-shadow(0 4px 20px rgba(0,0,0,.5)); }
+.card-noise { position:absolute; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"); mix-blend-mode:overlay; }
+.card-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%); opacity:0; transition:opacity .3s; display:flex; align-items:center; justify-content:center; }
+.play-ring { width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,.15); border:3px solid white; display:flex; align-items:center; justify-content:center; font-size:22px; transform:scale(.7); opacity:0; transition:all .3s cubic-bezier(.34,1.56,.64,1); }
+.card-body { background:var(--card); border:1px solid rgba(255,255,255,.06); border-top:none; border-radius:0 0 16px 16px; padding:16px; }
+.card-name { font-size:17px; font-weight:700; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.card-desc { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.card-meta { display:flex; align-items:center; justify-content:space-between; }
+.card-badges { display:flex; gap:6px; flex-wrap:wrap; }
+.badge { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; }
+.badge-multi { background:rgba(78,205,196,.15); color:var(--accent3); border:1px solid rgba(78,205,196,.25); }
+.badge-solo  { background:rgba(255,107,157,.15); color:var(--accent1); border:1px solid rgba(255,107,157,.25); }
+.badge-soon  { background:rgba(255,215,0,.1); color:var(--gold); border:1px solid rgba(255,215,0,.2); }
+.badge-new   { background:rgba(192,111,255,.15); color:var(--accent2); border:1px solid rgba(192,111,255,.25); }
+.badge-kart  { background:rgba(255,100,0,.15); color:#ff6400; border:1px solid rgba(255,100,0,.3); }
+.card-players { font-size:13px; color:var(--muted); display:flex; align-items:center; gap:4px; }
+.featured-row { display:grid; grid-template-columns:1.6fr 1fr 1fr; gap:18px; margin-bottom:40px; }
+.featured-card { border-radius:20px; overflow:hidden; cursor:pointer; position:relative; border:1px solid rgba(255,255,255,.06); transition:transform .35s cubic-bezier(.34,1.56,.64,1); }
+.featured-card:hover { transform:scale(1.03); }
+.featured-card:hover .fc-overlay { opacity:1; }
+.featured-card:hover .fc-play { transform:scale(1); opacity:1; }
+.fc-img { width:100%; height:220px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; font-size:90px; }
+.fc-img.tall { height:320px; font-size:110px; }
+.fc-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.2) 60%,transparent 100%); opacity:.4; transition:opacity .35s; display:flex; flex-direction:column; justify-content:flex-end; padding:24px; }
+.fc-play { width:64px; height:64px; border-radius:50%; background:rgba(255,255,255,.2); border:3px solid white; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 16px; transform:scale(.6); opacity:0; transition:all .3s cubic-bezier(.34,1.56,.64,1); }
+.fc-title { font-size:20px; font-weight:700; margin-bottom:6px; }
+.fc-sub { font-size:13px; color:rgba(255,255,255,.7); }
+.fc-new-badge { position:absolute; top:12px; left:12px; background:linear-gradient(135deg,#FFD700,#ff8c00); color:#1a1a0a; font-size:10px; font-weight:900; padding:4px 10px; border-radius:20px; font-family:'Press Start 2P',monospace; letter-spacing:1px; z-index:10; box-shadow:0 2px 12px rgba(255,215,0,.5); animation:pulse-badge 2s ease-in-out infinite; }
+@keyframes pulse-badge { 0%,100%{transform:scale(1);box-shadow:0 2px 12px rgba(255,215,0,.5)} 50%{transform:scale(1.08);box-shadow:0 4px 20px rgba(255,215,0,.9)} }
+.modal-bg { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.85); backdrop-filter:blur(16px); display:none; align-items:center; justify-content:center; padding:20px; }
+.modal-bg.open { display:flex; }
+.modal { background:var(--surface); border:1px solid rgba(255,255,255,.1); border-radius:24px; max-width:540px; width:100%; overflow:hidden; animation:modalIn .4s cubic-bezier(.34,1.56,.64,1); }
+@keyframes modalIn { from{transform:scale(.85);opacity:0} to{transform:scale(1);opacity:1} }
+.modal-thumb { width:100%; height:200px; display:flex; align-items:center; justify-content:center; font-size:80px; position:relative; overflow:hidden; }
+.modal-body { padding:28px; }
+.modal-title { font-family:'Press Start 2P',monospace; font-size:16px; margin-bottom:10px; line-height:1.5; }
+.modal-desc { font-size:16px; color:var(--muted); line-height:1.7; margin-bottom:20px; }
+.modal-tags { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
+.modal-actions { display:flex; gap:12px; }
+.btn-play { flex:1; padding:16px; background:linear-gradient(135deg,var(--accent1),var(--accent2)); border:none; border-radius:14px; color:white; font-size:16px; font-weight:700; font-family:'Rajdhani',sans-serif; cursor:pointer; transition:all .3s; box-shadow:0 6px 24px rgba(255,107,157,.4); }
+.btn-play:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(255,107,157,.6); }
+.btn-close-modal { padding:16px 20px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:14px; color:white; font-size:20px; cursor:pointer; transition:all .25s; font-family:'Rajdhani',sans-serif; }
+.btn-close-modal:hover { background:rgba(255,255,255,.12); }
+.coming-strip { margin:0 40px 40px; padding:24px 28px; background:linear-gradient(135deg,rgba(255,215,0,.06),rgba(192,111,255,.06)); border:1px solid rgba(255,215,0,.15); border-radius:16px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+.coming-icon { font-size:36px; }
+.coming-text h3 { font-size:18px; font-weight:700; margin-bottom:4px; }
+.coming-text p { font-size:14px; color:var(--muted); }
+@media(max-width:900px){ .header{padding:14px 20px} .hero{padding:40px 20px 30px} .section{padding:8px 20px 30px} .featured-row{grid-template-columns:1fr} .fc-img.tall{height:200px} .coming-strip{margin:0 20px 30px} .logo{font-size:13px} }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🕹️ ARCADE</div>
+  <a href="chat.html" class="back-btn">← Chat</a>
+</div>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-tag">🎮 Espace Jeux</div>
+    <div class="hero-title">BUBBLE<br>ARCADE</div>
+    <div class="hero-sub">Joue seul ou en famille directement depuis le chat. Jeux coopératifs, défis et surprises !</div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">6</span><div class="stat-lbl">Jeux dispo</div></div>
+      <div class="stat"><span class="stat-val">4</span><div class="stat-lbl">Joueurs max</div></div>
+      <div class="stat"><span class="stat-val">∞</span><div class="stat-lbl">Parties</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURED -->
+
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">⭐ À la une</div>
+  </div>
+  <div class="featured-row">
+    <div class="featured-card" onclick="openModal('cooprun')">
+      <div class="fc-new-badge">🆕 NOUVEAU</div>
+      <div class="fc-img tall" style="background:linear-gradient(135deg,#0a1a0a,#1a3a1a,#2d5a27);">
+        🍄
+        <div class="fc-overlay">
+          <div class="fc-play">▶</div>
+          <div class="fc-title">CoopRun</div>
+          <div class="fc-sub">Plateforme coopératif · Jusqu'à 4 joueurs</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      <div class="featured-card" onclick="openModal('kart')">
+        <div class="fc-new-badge" style="background:linear-gradient(135deg,#ff4400,#ff8800);">🏎️ NEW</div>
+        <div class="fc-img" style="background:linear-gradient(135deg,#1a0800,#3d1200,#1a0500);">
+          🏎️
+          <div class="fc-overlay">
+            <div class="fc-play">▶</div>
+            <div class="fc-title">BubbleKart</div>
+            <div class="fc-sub">Course Mario Kart · 1-4 joueurs</div>
+          </div>
+        </div>
+      </div>
+      <div class="featured-card" onclick="openModal('snake')">
+        <div class="fc-img" style="background:linear-gradient(135deg,#0a1f12,#134e5e,#1a3a1a);">
+          🐍
+          <div class="fc-overlay">
+            <div class="fc-play">▶</div>
+            <div class="fc-title">Snake Duel</div>
+            <div class="fc-sub">2 joueurs · PvP</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      <div class="featured-card" onclick="openModal('memory')">
+        <div class="fc-img" style="background:linear-gradient(135deg,#1a0a2e,#2e0a1a,#1a1a3e);">
+          🧠
+          <div class="fc-overlay">
+            <div class="fc-play">▶</div>
+            <div class="fc-title">Memory Blast</div>
+            <div class="fc-sub">Solo ou 2 joueurs</div>
+          </div>
+        </div>
+      </div>
+      <div class="featured-card" onclick="openModal('trivia')">
+        <div class="fc-img" style="background:linear-gradient(135deg,#1a1200,#2e2000,#3a2800);">
+          ❓
+          <div class="fc-overlay">
+            <div class="fc-play">▶</div>
+            <div class="fc-title">QuizBubble</div>
+            <div class="fc-sub">Famille · 2-4 joueurs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CAROUSEL Multijoueur -->
+
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">👥 Multijoueur</div>
+  </div>
+  <div class="carousel-wrap">
+    <div class="carousel">
+
+```
+  <!-- BubbleKart -->
+  <div class="game-card" onclick="openModal('kart')">
+    <div class="card-glow" style="background:linear-gradient(135deg,#ff4400,#ff8800)"></div>
+    <div class="card-img" style="background:linear-gradient(135deg,#1a0800,#3d1200,#300a00);">
+      <div class="card-noise"></div>
+      <div class="card-thumb-emoji">🏎️</div>
+      <div class="card-overlay"><div class="play-ring">▶</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-name">BubbleKart 🏆</div>
+      <div class="card-desc">Course top-down style Mario Kart ! Objets, dérapages, circuits et victoire !</div>
+      <div class="card-meta">
+        <div class="card-badges">
+          <span class="badge badge-kart">Course</span>
+          <span class="badge badge-new">Nouveau</span>
+        </div>
+        <div class="card-players">👥 1-4</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CoopRun -->
+  <div class="game-card" onclick="openModal('cooprun')">
+    <div class="card-glow"></div>
+    <div class="card-img" style="background:linear-gradient(135deg,#0a1a0a,#2d5a27);">
+      <div class="card-noise"></div>
+      <div class="card-thumb-emoji">🍄</div>
+      <div class="card-overlay"><div class="play-ring">▶</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-name">CoopRun</div>
+      <div class="card-desc">Plateforme Mario-style coopératif ! Ponts, ballons, obstacles à déjouer en équipe.</div>
+      <div class="card-meta">
+        <div class="card-badges"><span class="badge badge-multi">Coop</span><span class="badge badge-new">Nouveau</span></div>
+        <div class="card-players">👥 1-4</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BubbleQuest -->
+  <div class="game-card" onclick="openModal('quest')">
+    <div class="card-glow"></div>
+    <div class="card-img" style="background:linear-gradient(135deg,#0a0a1a,#1a0a2e);">
+      <div class="card-noise"></div>
+      <div class="card-thumb-emoji">🗝️</div>
+      <div class="card-overlay"><div class="play-ring">▶</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-name">BubbleQuest</div>
+      <div class="card-desc">Récupère toutes les clés et atteins la sortie avec tes coéquipiers !</div>
+      <div class="card-meta">
+        <div class="card-badges"><span class="badge badge-multi">Coop</span></div>
+        <div class="card-players">👥 1-4</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Snake -->
+  <div class="game-card" onclick="openModal('snake')">
+    <div class="card-glow"></div>
+    <div class="card-img" style="background:linear-gradient(135deg,#0a1f12,#134e5e);">
+      <div class="card-noise"></div>
+      <div class="card-thumb-emoji">🐍</div>
+      <div class="card-overlay"><div class="play-ring">▶</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Snake Duel</div>
+      <div class="card-desc">Duel de serpents ! Fais en sorte que ton adversaire se crashe le premier.</div>
+      <div class="card-meta">
+        <div class="card-badges"><span class="badge badge-solo">PvP</span></div>
+        <div class="card-players">👥 2</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz -->
+  <div class="game-card" onclick="openModal('trivia')">
+    <div class="card-glow"></div>
+    <div class="card-img" style="background:linear-gradient(135deg,#1a1200,#3a2800);">
+      <div class="card-noise"></div>
+      <div class="card-thumb-emoji">❓</div>
+      <div class="card-overlay"><div class="play-ring">▶</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-name">QuizBubble</div>
+      <div class="card-desc">Questions pour la famille ! Le plus rapide à répondre gagne les points.</div>
+      <div class="card-meta">
+        <div class="card-badges"><span class="badge badge-multi">Famille</span></div>
+        <div class="card-players">👥 2-4</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coming soon -->
+  <div class="game-card" style="opacity:.5;pointer-events:none;">
+    <div class="card-glow"></div>
+    <div class="card-img" style="background:linear-gradient(135deg,#0f0f1a,#1a1a2e);">
+      <div class="card-noise"></div>
+      <div class="card-thumb-emoji">⚽</div>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Bubble Football</div>
+      <div class="card-desc">Match de foot minimaliste en arène. Prochainement !</div>
+      <div class="card-meta">
+        <div class="card-badges"><span class="badge badge-soon">Bientôt</span></div>
+        <div class="card-players">👥 2-4</div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- CAROUSEL Solo -->
+
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">🎯 Solo & Détente</div>
+  </div>
+  <div class="carousel-wrap">
+    <div class="carousel">
+      <div class="game-card" onclick="openModal('memory')">
+        <div class="card-glow"></div>
+        <div class="card-img" style="background:linear-gradient(135deg,#1a0a2e,#2e0a3e);">
+          <div class="card-noise"></div>
+          <div class="card-thumb-emoji">🧠</div>
+          <div class="card-overlay"><div class="play-ring">▶</div></div>
+        </div>
+        <div class="card-body">
+          <div class="card-name">Memory Blast</div>
+          <div class="card-desc">Retrouve les paires d'emojis le plus vite possible. Entraîne ta mémoire !</div>
+          <div class="card-meta">
+            <div class="card-badges"><span class="badge badge-solo">Solo</span><span class="badge badge-multi">2J</span></div>
+            <div class="card-players">👥 1-2</div>
+          </div>
+        </div>
+      </div>
+      <div class="game-card" style="opacity:.5;pointer-events:none;">
+        <div class="card-glow"></div>
+        <div class="card-img" style="background:linear-gradient(135deg,#0f1a0f,#1a2e1a);">
+          <div class="card-noise"></div>
+          <div class="card-thumb-emoji">🌿</div>
+        </div>
+        <div class="card-body">
+          <div class="card-name">Bubble Garden</div>
+          <div class="card-desc">Puzzle zen de jardinage. Bientôt disponible.</div>
+          <div class="card-meta">
+            <div class="card-badges"><span class="badge badge-soon">Bientôt</span></div>
+            <div class="card-players">👤 1</div>
+          </div>
+        </div>
+      </div>
+      <div class="game-card" style="opacity:.5;pointer-events:none;">
+        <div class="card-glow"></div>
+        <div class="card-img" style="background:linear-gradient(135deg,#1a0f0a,#2e1a0a);">
+          <div class="card-noise"></div>
+          <div class="card-thumb-emoji">🎨</div>
+        </div>
+        <div class="card-body">
+          <div class="card-name">Pixel Art</div>
+          <div class="card-desc">Crée des pixel art en famille et partage-les dans le chat.</div>
+          <div class="card-meta">
+            <div class="card-badges"><span class="badge badge-soon">Bientôt</span></div>
+            <div class="card-players">👥 1-4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="coming-strip">
+  <div class="coming-icon">🚀</div>
+  <div class="coming-text">
+    <h3>Plus de jeux arrivent bientôt !</h3>
+    <p>Bubble Football, Pixel Art collaboratif, Bubble Garden et plus encore…</p>
+  </div>
+</div>
+
+<!-- MODAL -->
+
+<div class="modal-bg" id="modalBg" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-thumb" id="modalThumb"></div>
+    <div class="modal-body">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-desc"  id="modalDesc"></div>
+      <div class="modal-tags"  id="modalTags"></div>
+      <div class="modal-actions">
+        <button class="btn-play" id="modalPlay" onclick="launchGame()">▶ Jouer maintenant</button>
+        <button class="btn-close-modal" onclick="document.getElementById('modalBg').classList.remove('open')">✕</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var GAMES = {
+  kart: {
+    emoji:'🏎️',
+    bg:'linear-gradient(135deg,#1a0800,#3d1200,#300a00)',
+    title:'BubbleKart',
+    desc:'Course style Mario Kart vue du dessus ! Choisis ton kart, ramasse des objets (carapaces, bananes, éclairs...), dérapage et dépasse tes adversaires sur 3 circuits différents. Jusqu\'à 4 joueurs sur le même écran !',
+    tags:['<span class="badge badge-kart">Course</span>','<span class="badge badge-new">Nouveau</span>','<span class="badge badge-multi">1-4 joueurs</span>'],
+    url:'kart.html'
+  },
+  cooprun: {
+    emoji:'🍄',
+    bg:'linear-gradient(135deg,#0a1a0a,#1a3a1a,#2d5a27)',
+    title:'CoopRun',
+    desc:'Plateforme coopératif style Mario ! Choisis ton avatar, avance de gauche à droite, actionnez les ponts en équipe et utilisez le ballon de baudruche pour atteindre les hauteurs. Jusqu\'à 4 joueurs !',
+    tags:['<span class="badge badge-multi">Coopératif</span>','<span class="badge badge-new">Nouveau</span>','<span class="badge badge-multi">1-4 joueurs</span>'],
+    url:'mario-coop.html'
+  },
+  quest: {
+    emoji:'🗝️',
+    bg:'linear-gradient(135deg,#0a0a1a,#1a0a2e,#0a1a2e)',
+    title:'BubbleQuest',
+    desc:'Jeu coopératif 2D jusqu\'à 4 joueurs. Récupère toutes les clés, déjoue les pièges et atteins la sortie ensemble !',
+    tags:['<span class="badge badge-multi">Coopératif</span>','<span class="badge badge-multi">1-4 joueurs</span>'],
+    url:'bubblequest.html'
+  },
+  snake: {
+    emoji:'🐍',
+    bg:'linear-gradient(135deg,#0a1f12,#134e5e)',
+    title:'Snake Duel',
+    desc:'Duel de serpents classique en 2 joueurs sur le même écran. Évite les murs, les obstacles et le serpent adverse !',
+    tags:['<span class="badge badge-solo">PvP</span>','<span class="badge badge-multi">2 joueurs</span>'],
+    url:'snake.html'
+  },
+  memory: {
+    emoji:'🧠',
+    bg:'linear-gradient(135deg,#1a0a2e,#2e0a3e)',
+    title:'Memory Blast',
+    desc:'Retourne les cartes et trouve toutes les paires d\'emojis cachées. Mode solo chrono ou duel 2 joueurs !',
+    tags:['<span class="badge badge-solo">Solo</span>','<span class="badge badge-multi">2 joueurs</span>'],
+    url:'memory.html'
+  },
+  trivia: {
+    emoji:'❓',
+    bg:'linear-gradient(135deg,#1a1200,#3a2800)',
+    title:'QuizBubble',
+    desc:'Questions culture générale en famille ! Le premier à appuyer et répondre correctement gagne les points. Jusqu\'à 4 joueurs !',
+    tags:['<span class="badge badge-multi">Famille</span>','<span class="badge badge-multi">2-4 joueurs</span>'],
+    url:'quiz.html'
+  }
+};
+var currentGame=null;
+function openModal(id){var g=GAMES[id];if(!g)return;currentGame=g;var t=document.getElementById('modalThumb');t.style.background=g.bg;t.style.fontSize='70px';t.textContent=g.emoji;document.getElementById('modalTitle').textContent=g.title;document.getElementById('modalDesc').textContent=g.desc;document.getElementById('modalTags').innerHTML=g.tags.join('');document.getElementById('modalBg').classList.add('open');}
+function closeModal(e){if(e.target===document.getElementById('modalBg'))document.getElementById('modalBg').classList.remove('open');}
+function launchGame(){if(currentGame)window.location.href=currentGame.url;}
+</script>
+
+</body>
+</html>

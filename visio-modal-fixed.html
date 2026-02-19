@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* Particules d'arrière-plan */
+    .particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        animation: float 15s infinite ease-in-out;
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0) translateX(0);
+            opacity: 0;
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-100vh) translateX(100px);
+            opacity: 0;
+        }
+    }
+
+    /* Bouton Visio principal */
+    .visio-btn-container {
+        position: relative;
+        z-index: 10;
+    }
+
+    .visio-btn {
+        position: relative;
+        padding: 20px 50px;
+        font-size: 24px;
+        font-weight: bold;
+        color: white;
+        background: linear-gradient(135deg, #ff6b9d 0%, #c06fff 100%);
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 10px 40px rgba(192, 111, 255, 0.4);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .visio-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .visio-btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .visio-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 15px 60px rgba(192, 111, 255, 0.6);
+    }
+
+    .visio-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Animation de pulsation */
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 10px 40px rgba(192, 111, 255, 0.4);
+        }
+        50% {
+            box-shadow: 0 10px 60px rgba(192, 111, 255, 0.8);
+        }
+    }
+
+    .visio-btn {
+        animation: pulse 2s infinite;
+    }
+
+    /* Modal overlay */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.4s ease;
+    }
+
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Modal container */
+    .modal {
+        position: relative;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 30px;
+        padding: 40px;
+        width: 90%;
+        max-width: 900px;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 100px rgba(0, 0, 0, 0.5);
+        transform: scale(0.7) rotateX(45deg);
+        opacity: 0;
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .modal-overlay.active .modal {
+        transform: scale(1) rotateX(0deg);
+        opacity: 1;
+    }
+
+    /* Effet flash au clic */
+    @keyframes flashEffect {
+        0% {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(1.5);
+        }
+    }
+
+    .flash {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 9999;
+        animation: flashEffect 0.6s ease-out;
+    }
+
+    /* Header du modal */
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .header-controls {
+        display: flex;
+        gap: 10px;
+    }
+
+    .modal-title {
+        font-size: 32px;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 0 20px rgba(255, 107, 157, 0.8);
+    }
+
+    .minimize-btn {
+        background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%);
+        border: none;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 20px rgba(255, 165, 2, 0.4);
+    }
+
+    .minimize-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 30px rgba(255, 165, 2, 0.6);
+    }
+
+    .close-btn {
+        background: linear-gradient(135deg, #ff6b9d 0%, #c06fff 100%);
+        border: none;
+        color: white;
+        font-size: 28px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 20px rgba(192, 111, 255, 0.4);
+    }
+
+    .close-btn:hover {
+        transform: rotate(90deg) scale(1.1);
+        box-shadow: 0 8px 30px rgba(192, 111, 255, 0.6);
+    }
+
+    /* Contenu du modal */
+    .modal-content {
+        color: white;
+    }
+
+    .video-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 20px;
+        margin-bottom: 30px;
+        overflow: hidden;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .video-placeholder {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .video-placeholder-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        opacity: 0.7;
+    }
+
+    .video-placeholder-text {
+        font-size: 18px;
+        opacity: 0.8;
+    }
+
+    /* Section Participants */
+    .participants-section {
+        margin-bottom: 25px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .participants-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 15px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .participant-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .participant-item:hover {
+        background: rgba(255, 255, 255, 0.12);
+        transform: translateX(5px);
+    }
+
+    .participant-item.active {
+        border: 2px solid rgba(255, 107, 157, 0.5);
+    }
+
+    .participant-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #ff6b9d 0%, #c06fff 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .participant-name {
+        flex: 1;
+        font-weight: 600;
+        color: white;
+    }
+
+    .participant-status {
+        font-size: 12px;
+        padding: 4px 10px;
+        background: rgba(46, 213, 115, 0.3);
+        color: #2ed573;
+        border-radius: 20px;
+        border: 1px solid rgba(46, 213, 115, 0.5);
+    }
+
+    /* Section invitation */
+    .invite-section {
+        display: flex;
+        gap: 10px;
+    }
+
+    .invite-input {
+        flex: 1;
+        padding: 12px 18px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        color: white;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .invite-input:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 107, 157, 0.5);
+    }
+
+    .invite-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .invite-btn {
+        padding: 12px 25px;
+        background: linear-gradient(135deg, #2ed573 0%, #26de81 100%);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 20px rgba(46, 213, 115, 0.3);
+    }
+
+    .invite-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(46, 213, 115, 0.5);
+    }
+
+    /* Section Chat */
+    .chat-section {
+        margin-bottom: 25px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: all 0.4s ease;
+    }
+
+    .chat-section.active {
+        max-height: 400px;
+        opacity: 1;
+        margin-bottom: 25px;
+    }
+
+    .chat-messages {
+        height: 250px;
+        overflow-y: auto;
+        margin-bottom: 15px;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+    }
+
+    .chat-info {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 14px;
+        padding: 20px;
+    }
+
+    .chat-message {
+        margin-bottom: 12px;
+        padding: 10px 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .chat-message-author {
+        font-weight: 600;
+        color: #ff6b9d;
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .chat-message-text {
+        color: white;
+        font-size: 14px;
+    }
+
+    .chat-message-time {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.4);
+        text-align: right;
+        margin-top: 4px;
+    }
+
+    .chat-input-container {
+        display: flex;
+        gap: 10px;
+    }
+
+    .chat-input {
+        flex: 1;
+        padding: 12px 18px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        color: white;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .chat-input:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 107, 157, 0.5);
+    }
+
+    .chat-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .send-chat-btn {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #ff6b9d 0%, #c06fff 100%);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 20px rgba(192, 111, 255, 0.3);
+    }
+
+    .send-chat-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 30px rgba(192, 111, 255, 0.5);
+    }
+
+    /* Contrôles */
+    .controls {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    .control-btn {
+        padding: 15px 30px;
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .control-btn:hover {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .control-btn.active {
+        background: linear-gradient(135deg, #ff6b9d 0%, #c06fff 100%);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* MODE MINIMISÉ - Picture in Picture */
+    .modal.minimized {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 320px;
+        max-width: 320px;
+        height: 220px;
+        max-height: 220px;
+        padding: 0;
+        margin: 0;
+        z-index: 10000;
+        transform: scale(1) rotateX(0deg) !important;
+        opacity: 1;
+        border-radius: 20px;
+        box-shadow: 0 15px 60px rgba(0, 0, 0, 0.8);
+        overflow: hidden;
+        cursor: move;
+    }
+
+    .modal.minimized .modal-header {
+        margin-bottom: 0;
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        background: linear-gradient(135deg, rgba(255, 107, 157, 0.3) 0%, rgba(192, 111, 255, 0.3) 100%);
+    }
+
+    .modal.minimized .modal-title {
+        font-size: 16px;
+    }
+
+    .modal.minimized .minimize-btn,
+    .modal.minimized .close-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+    }
+
+    .modal.minimized .modal-content {
+        display: none;
+    }
+
+    .modal.minimized .mini-video-view {
+        display: flex;
+    }
+
+    .modal-overlay.minimized {
+        background: transparent;
+        backdrop-filter: none;
+        pointer-events: none;
+    }
+
+    .modal-overlay.minimized .modal {
+        pointer-events: all;
+    }
+
+    /* Mini vue vidéo */
+    .mini-video-view {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+        height: calc(100% - 60px);
+    }
+
+    .mini-video-container {
+        flex: 1;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mini-video-icon {
+        font-size: 40px;
+        opacity: 0.7;
+    }
+
+    .mini-controls {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .mini-control-btn {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mini-control-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+
+    .mini-control-btn.active {
+        background: linear-gradient(135deg, #2ed573 0%, #26de81 100%);
+    }
+
+    .mini-control-btn.hangup {
+        background: linear-gradient(135deg, #ff4757 0%, #ff6348 100%);
+    }
+
+    /* Effet de brillance */
+    @keyframes shine {
+        0% { left: -100%; }
+        100% { left: 200%; }
+    }
+
+    .visio-btn::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: shine 3s infinite;
+    }
+
+    /* Scrollbar */
+    .modal::-webkit-scrollbar,
+    .participants-list::-webkit-scrollbar,
+    .chat-messages::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .modal::-webkit-scrollbar-track,
+    .participants-list::-webkit-scrollbar-track,
+    .chat-messages::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    .modal::-webkit-scrollbar-thumb,
+    .participants-list::-webkit-scrollbar-thumb,
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #ff6b9d 0%, #c06fff 100%);
+        border-radius: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .visio-btn {
+            padding: 15px 35px;
+            font-size: 20px;
+        }
+
+        .modal {
+            padding: 25px;
+            border-radius: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+        }
+
+        .control-btn {
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+
+        .modal.minimized {
+            width: 280px;
+            height: 200px;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <!-- Particules -->
+    <div class="particles" id="particles"></div>
+
+```
+<!-- Bouton principal -->
+<div class="visio-btn-container">
+    <button class="visio-btn" id="openVisio">
+        🎥 Lancer la Visio
+    </button>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">✨ Appel Visio</h2>
+            <div class="header-controls">
+                <button class="minimize-btn" id="minimizeBtn" title="Réduire">─</button>
+                <button class="close-btn" id="closeModal">×</button>
+            </div>
+        </div>
+        
+        <div class="modal-content">
+            <div class="video-container">
+                <div class="video-placeholder">
+                    <div class="video-placeholder-icon">📹</div>
+                    <div class="video-placeholder-text">La caméra s'activera ici</div>
+                </div>
+            </div>
+
+            <!-- Participants -->
+            <div class="participants-section">
+                <h3 class="section-title">👥 Participants (1/10)</h3>
+                <div class="participants-list" id="participantsList">
+                    <div class="participant-item active">
+                        <div class="participant-avatar">👤</div>
+                        <span class="participant-name">Vous</span>
+                        <span class="participant-status">En ligne</span>
+                    </div>
+                </div>
+                
+                <div class="invite-section">
+                    <input type="text" class="invite-input" id="inviteInput" placeholder="Entrez un prénom pour inviter...">
+                    <button class="invite-btn" id="inviteBtn">➕ Inviter</button>
+                </div>
+            </div>
+
+            <!-- Chat -->
+            <div class="chat-section" id="chatSection">
+                <h3 class="section-title">💬 Chat en direct</h3>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-info">Le chat est disponible pendant l'appel</div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Tapez un message...">
+                    <button class="send-chat-btn" id="sendChatBtn">📤</button>
+                </div>
+            </div>
+
+            <!-- Contrôles -->
+            <div class="controls">
+                <button class="control-btn active" id="toggleMic">🎤 Micro ON</button>
+                <button class="control-btn active" id="toggleCamera">📹 Caméra ON</button>
+                <button class="control-btn" id="shareScreen">🔊 Partage d'écran</button>
+                <button class="control-btn" id="toggleChat">💬 Afficher Chat</button>
+                <button class="control-btn" id="hangupBtn" style="background: linear-gradient(135deg, #ff4757 0%, #ff6348 100%);">📞 Raccrocher</button>
+            </div>
+        </div>
+
+        <!-- Vue minimisée -->
+        <div class="mini-video-view">
+            <div class="mini-video-container">
+                <div class="mini-video-icon">📹</div>
+            </div>
+            <div class="mini-controls">
+                <button class="mini-control-btn active" id="miniMic" title="Micro">🎤</button>
+                <button class="mini-control-btn active" id="miniCamera" title="Caméra">📹</button>
+                <button class="mini-control-btn hangup" id="miniHangup" title="Raccrocher">📞</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Créer les particules
+    function createParticles() {
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+    }
+
+    // Effet flash
+    function createFlash() {
+        const flash = document.createElement('div');
+        flash.className = 'flash';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 600);
+    }
+
+    // Participants
+    const participants = [{ name: 'Vous', status: 'En ligne', avatar: '👤', isYou: true }];
+
+    function updateParticipantsList() {
+        document.getElementById('participantsList').innerHTML = participants.map(p => `
+            <div class="participant-item ${p.isYou ? 'active' : ''}">
+                <div class="participant-avatar">${p.avatar}</div>
+                <span class="participant-name">${p.name}</span>
+                <span class="participant-status">${p.status}</span>
+            </div>
+        `).join('');
+        document.querySelector('.participants-section h3').textContent = `👥 Participants (${participants.length}/10)`;
+    }
+
+    // Inviter
+    document.getElementById('inviteBtn').addEventListener('click', () => {
+        const input = document.getElementById('inviteInput');
+        const prenom = input.value.trim();
+        if (prenom && participants.length < 10) {
+            if (participants.some(p => p.name.toLowerCase() === prenom.toLowerCase())) {
+                alert('Cette personne est déjà dans l\'appel !');
+                return;
+            }
+            const avatars = ['👨', '👩', '🧑', '👦', '👧', '🧔', '👴', '👵'];
+            participants.push({
+                name: prenom,
+                status: 'Connexion...',
+                avatar: avatars[Math.floor(Math.random() * avatars.length)],
+                isYou: false
+            });
+            updateParticipantsList();
+            input.value = '';
+            setTimeout(() => {
+                participants[participants.length - 1].status = 'En ligne';
+                updateParticipantsList();
+                addChatMessage('Système', `${prenom} a rejoint l'appel`, true);
+            }, 2000);
+        } else if (participants.length >= 10) {
+            alert('Nombre maximum de participants atteint (10)');
+        }
+    });
+
+    document.getElementById('inviteInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') document.getElementById('inviteBtn').click();
+    });
+
+    // Chat
+    function addChatMessage(author, text, isSystem = false) {
+        const container = document.getElementById('chatMessages');
+        const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        const msg = document.createElement('div');
+        msg.className = 'chat-message';
+        msg.innerHTML = `
+            <div class="chat-message-author">${author}</div>
+            <div class="chat-message-text">${text}</div>
+            <div class="chat-message-time">${time}</div>
+        `;
+        if (isSystem) {
+            msg.style.background = 'rgba(46, 213, 115, 0.15)';
+            msg.querySelector('.chat-message-author').style.color = '#2ed573';
+        }
+        const info = container.querySelector('.chat-info');
+        if (info) info.remove();
+        container.appendChild(msg);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        if (input.value.trim()) {
+            addChatMessage('Vous', input.value.trim());
+            input.value = '';
+        }
+    }
+
+    document.getElementById('sendChatBtn').addEventListener('click', sendChatMessage);
+    document.getElementById('chatInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChatMessage();
+    });
+
+    // Toggle chat
+    let chatVisible = false;
+    document.getElementById('toggleChat').addEventListener('click', () => {
+        chatVisible = !chatVisible;
+        document.getElementById('chatSection').classList.toggle('active');
+        document.getElementById('toggleChat').classList.toggle('active');
+        document.getElementById('toggleChat').textContent = chatVisible ? '💬 Masquer Chat' : '💬 Afficher Chat';
+    });
+
+    // Minimisation
+    let isMinimized = false;
+    document.getElementById('minimizeBtn').addEventListener('click', () => {
+        isMinimized = !isMinimized;
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('modalOverlay');
+        if (isMinimized) {
+            modal.classList.add('minimized');
+            overlay.classList.add('minimized');
+            document.getElementById('minimizeBtn').textContent = '□';
+        } else {
+            modal.classList.remove('minimized');
+            overlay.classList.remove('minimized');
+            document.getElementById('minimizeBtn').textContent = '─';
+        }
+    });
+
+    // Déplacement en mode minimisé
+    let isDragging = false;
+    let currentX, currentY, initialX, initialY;
+    let xOffset = 0, yOffset = 0;
+    const modal = document.getElementById('modal');
+
+    modal.addEventListener('mousedown', dragStart);
+    modal.addEventListener('touchstart', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('touchmove', drag);
+    document.addEventListener('mouseup', dragEnd);
+    document.addEventListener('touchend', dragEnd);
+
+    function dragStart(e) {
+        if (!modal.classList.contains('minimized')) return;
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+        if (e.type === 'touchstart') {
+            initialX = e.touches[0].clientX - xOffset;
+            initialY = e.touches[0].clientY - yOffset;
+        } else {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+        }
+        isDragging = true;
+    }
+
+    function drag(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        if (e.type === 'touchmove') {
+            currentX = e.touches[0].clientX - initialX;
+            currentY = e.touches[0].clientY - initialY;
+        } else {
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+        }
+        xOffset = currentX;
+        yOffset = currentY;
+        modal.style.transform = `translate(${currentX}px, ${currentY}px)`;
+    }
+
+    function dragEnd() {
+        initialX = currentX;
+        initialY = currentY;
+        isDragging = false;
+    }
+
+    // Contrôles
+    let micOn = true, cameraOn = true, screenSharing = false;
+
+    document.getElementById('toggleMic').addEventListener('click', () => {
+        micOn = !micOn;
+        document.getElementById('toggleMic').classList.toggle('active');
+        document.getElementById('toggleMic').textContent = micOn ? '🎤 Micro ON' : '🔇 Micro OFF';
+    });
+
+    document.getElementById('toggleCamera').addEventListener('click', () => {
+        cameraOn = !cameraOn;
+        document.getElementById('toggleCamera').classList.toggle('active');
+        document.getElementById('toggleCamera').textContent = cameraOn ? '📹 Caméra ON' : '📹 Caméra OFF';
+    });
+
+    document.getElementById('shareScreen').addEventListener('click', () => {
+        screenSharing = !screenSharing;
+        document.getElementById('shareScreen').classList.toggle('active');
+        document.getElementById('shareScreen').textContent = screenSharing ? '🔴 Arrêter partage' : '🔊 Partage d\'écran';
+    });
+
+    // Mini contrôles
+    document.getElementById('miniMic').addEventListener('click', () => {
+        micOn = !micOn;
+        document.getElementById('miniMic').classList.toggle('active');
+        document.getElementById('toggleMic').classList.toggle('active');
+        document.getElementById('toggleMic').textContent = micOn ? '🎤 Micro ON' : '🔇 Micro OFF';
+    });
+
+    document.getElementById('miniCamera').addEventListener('click', () => {
+        cameraOn = !cameraOn;
+        document.getElementById('miniCamera').classList.toggle('active');
+        document.getElementById('toggleCamera').classList.toggle('active');
+        document.getElementById('toggleCamera').textContent = cameraOn ? '📹 Caméra ON' : '📹 Caméra OFF';
+    });
+
+    document.getElementById('miniHangup').addEventListener('click', () => {
+        document.getElementById('modalOverlay').classList.remove('active');
+        modal.classList.remove('minimized');
+        document.getElementById('modalOverlay').classList.remove('minimized');
+    });
+
+    // Ouvrir/Fermer
+    document.getElementById('openVisio').addEventListener('click', () => {
+        createFlash();
+        setTimeout(() => document.getElementById('modalOverlay').classList.add('active'), 300);
+    });
+
+    document.getElementById('closeModal').addEventListener('click', () => {
+        document.getElementById('modalOverlay').classList.remove('active');
+    });
+
+    document.getElementById('hangupBtn').addEventListener('click', () => {
+        document.getElementById('modalOverlay').classList.remove('active');
+    });
+
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('modalOverlay')) {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+    });
+
+    // Scroll body
+    new MutationObserver(() => {
+        document.body.style.overflow = document.getElementById('modalOverlay').classList.contains('active') ? 'hidden' : '';
+    }).observe(document.getElementById('modalOverlay'), { attributes: true });
+
+    // Init
+    createParticles();
+</script>
+```
+
+</body>
+</html>

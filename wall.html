@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mur — BubbleChat</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap');
+
+```
+    :root { --neon-pink: #ff6b9d; --neon-purple: #c06fff; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Outfit', sans-serif; min-height: 100vh; padding: 20px; overflow-x: hidden; }
+
+    #bgLayer {
+        position: fixed; inset: 0; z-index: -1;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        transition: background 0.6s ease;
+    }
+    #bgLayer.has-image { background-size: cover !important; background-position: center !important; }
+    #bgLayer::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.3); }
+
+    .header {
+        background: rgba(255,255,255,.06); backdrop-filter: blur(14px);
+        border-radius: 20px; padding: 18px 28px; margin-bottom: 28px;
+        border: 1px solid rgba(255,255,255,.15);
+        display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+    }
+    .header-title { color: white; font-size: 26px; font-weight: 900; }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+
+    .btn {
+        padding: 10px 22px; border-radius: 12px; border: none;
+        font-weight: 700; cursor: pointer; transition: all .3s;
+        font-size: 14px; display: flex; align-items: center; gap: 8px;
+        font-family: 'Outfit', sans-serif;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple)); color: white; box-shadow: 0 4px 15px rgba(192,111,255,.4); }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    .btn-secondary { background: rgba(255,255,255,.1); color: white; border: 2px solid rgba(255,255,255,.2); }
+    .btn-secondary:hover { background: rgba(255,255,255,.2); }
+    .btn-sm { padding: 7px 14px; font-size: 13px; }
+
+    .tabs { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+    .tab {
+        padding: 12px 28px; background: rgba(255,255,255,.08);
+        border: 2px solid rgba(255,255,255,.12); border-radius: 14px;
+        color: white; font-weight: 700; cursor: pointer; transition: all .3s;
+    }
+    .tab:hover { background: rgba(255,255,255,.15); }
+    .tab.active {
+        background: linear-gradient(135deg, rgba(255,107,157,.25), rgba(192,111,255,.25));
+        border-color: var(--neon-pink); box-shadow: 0 0 16px rgba(255,107,157,.5);
+    }
+
+    #communWallPage { display: none; }
+    #communWallPage.active { display: block; }
+    #persoWallsPage { display: none; }
+    #persoWallsPage.active { display: block; }
+
+    /* BG PICKER */
+    .bg-picker-bar {
+        background: rgba(255,255,255,.05); backdrop-filter: blur(10px);
+        border-radius: 16px; padding: 14px 18px; margin-bottom: 20px;
+        border: 1px solid rgba(255,255,255,.1);
+        display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .bg-picker-label { color: rgba(255,255,255,.7); font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .bg-swatches { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .bg-swatch {
+        width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+        border: 3px solid transparent; transition: all .25s;
+    }
+    .bg-swatch:hover, .bg-swatch.active { border-color: white; transform: scale(1.15); }
+    .bg-upload-label {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 32px; height: 32px; border-radius: 50%;
+        background: rgba(255,255,255,.12); border: 2px dashed rgba(255,255,255,.3);
+        cursor: pointer; font-size: 14px; transition: all .3s;
+    }
+    .bg-upload-label:hover { background: rgba(255,107,157,.25); }
+    .bg-upload-label input { display: none; }
+
+    /* PROFILES */
+    .profiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 22px; }
+    .profile-card {
+        background: rgba(255,255,255,.06); backdrop-filter: blur(12px);
+        border-radius: 20px; padding: 22px; border: 2px solid rgba(255,255,255,.1);
+        cursor: pointer; transition: all .4s; text-align: center;
+    }
+    .profile-card:hover { transform: translateY(-8px) scale(1.02); border-color: var(--neon-pink); box-shadow: 0 0 20px var(--neon-pink); }
+    .profile-avatar {
+        width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 14px;
+        background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+        border: 3px solid rgba(255,255,255,.25); overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 40px; color: white; font-weight: 900; position: relative;
+    }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .status-dot { position: absolute; bottom: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; border: 3px solid rgba(15,15,25,.9); }
+    .status-dot.online { background: #4caf50; animation: pulseDot 2s infinite; }
+    .status-dot.offline { background: #555; }
+    @keyframes pulseDot { 0%,100%{box-shadow:0 0 4px #4caf50} 50%{box-shadow:0 0 14px #4caf50} }
+    .profile-name { color: white; font-weight: 700; font-size: 17px; margin-bottom: 6px; }
+
+    /* COMPOSER */
+    .posts-container { max-width: 680px; margin: 0 auto; }
+    .post-composer {
+        background: rgba(255,255,255,.04); border-radius: 18px;
+        padding: 18px 20px; margin-bottom: 22px; border: 1px solid rgba(255,255,255,.12);
+    }
+    .post-composer-input {
+        width: 100%; background: rgba(255,255,255,.07);
+        border: 1.5px solid rgba(255,255,255,.12); border-radius: 14px;
+        padding: 13px 16px; color: white; font-size: 15px;
+        resize: vertical; min-height: 78px; font-family: 'Outfit', sans-serif; margin-bottom: 12px;
+    }
+    .post-composer-input:focus { outline: none; border-color: var(--neon-pink); }
+    .post-composer-input::placeholder { color: rgba(255,255,255,.4); }
+    .image-preview-wrap { position: relative; margin-bottom: 12px; display: none; }
+    .image-preview-wrap img { width: 100%; max-height: 180px; object-fit: cover; border-radius: 12px; border: 2px solid var(--neon-pink); }
+    .image-preview-remove {
+        position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%;
+        background: rgba(0,0,0,.75); color: white; border: none; font-size: 15px; cursor: pointer;
+    }
+    .image-preview-remove:hover { background: var(--neon-pink); }
+    .post-composer-actions { display: flex; gap: 10px; align-items: center; }
+    .photo-btn-label {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 42px; height: 42px; border-radius: 50%;
+        background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.2);
+        cursor: pointer; font-size: 18px; transition: all .3s;
+    }
+    .photo-btn-label:hover { background: rgba(255,107,157,.25); transform: scale(1.1); }
+    .photo-btn-label input[type=file] { display: none; }
+    .publish-error { color: var(--neon-pink); font-size: 13px; margin-top: 8px; padding: 8px 12px; background: rgba(255,107,157,.1); border-radius: 8px; display: none; }
+
+    /* POSTS */
+    .post {
+        border-radius: 18px; padding: 20px 22px; margin-bottom: 22px;
+        background: rgba(15,15,25,.88); backdrop-filter: blur(10px);
+        animation: slideIn .35s ease, neonPulse 3s ease-in-out infinite;
+        box-shadow: 0 0 0 2px var(--neon-pink), 0 0 10px var(--neon-pink), 0 0 25px rgba(192,111,255,.5);
+    }
+    @keyframes neonPulse {
+        0%,100% { box-shadow: 0 0 0 2px var(--neon-pink), 0 0 8px var(--neon-pink), 0 0 20px rgba(192,111,255,.4); }
+        50% { box-shadow: 0 0 0 2px var(--neon-purple), 0 0 14px var(--neon-purple), 0 0 35px rgba(255,107,157,.6); }
+    }
+    @keyframes slideIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+
+    .post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .post-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+        overflow: hidden; border: 2px solid rgba(255,255,255,.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; color: white; font-weight: 700; flex-shrink: 0;
+    }
+    .post-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .post-header-info { flex: 1; }
+    .post-author-name { color: white; font-weight: 700; font-size: 15px; }
+    .post-time { color: rgba(255,255,255,.45); font-size: 12px; margin-top: 2px; }
+    .post-delete-btn {
+        width: 32px; height: 32px; border-radius: 50%; border: none;
+        background: rgba(255,80,80,.1); color: #ff6b6b; font-size: 14px;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        transition: all .25s; flex-shrink: 0;
+    }
+    .post-delete-btn:hover { background: rgba(255,80,80,.3); transform: scale(1.1); }
+
+    .post-content { color: rgba(255,255,255,.92); font-size: 15px; line-height: 1.65; margin-bottom: 14px; white-space: pre-wrap; }
+    .post-image { width: 100%; border-radius: 12px; margin-bottom: 14px; display: block; }
+    .post-actions { display: flex; gap: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.08); flex-wrap: wrap; }
+    .post-action {
+        display: flex; align-items: center; gap: 7px;
+        color: rgba(255,255,255,.6); font-size: 14px; font-weight: 600;
+        cursor: pointer; transition: all .25s; padding: 7px 12px; border-radius: 10px;
+    }
+    .post-action:hover { background: rgba(255,255,255,.08); color: white; }
+    .post-action.liked { color: var(--neon-pink); }
+    .likes-names { color: rgba(255,255,255,.4); font-size: 11px; margin-top: 4px; padding: 0 4px; font-style: italic; }
+
+    /* COMMENTS */
+    .comments-section { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.07); display: none; }
+    .comments-section.open { display: block; }
+    .comment { display: flex; gap: 10px; margin-bottom: 12px; }
+    .comment-avatar {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+        overflow: hidden; border: 2px solid rgba(255,255,255,.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 13px; color: white; font-weight: 700; flex-shrink: 0;
+    }
+    .comment-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .comment-content { flex: 1; background: rgba(255,255,255,.07); border-radius: 12px; padding: 9px 13px; }
+    .comment-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+    .comment-author { color: white; font-weight: 700; font-size: 13px; }
+    .comment-delete-btn {
+        width: 22px; height: 22px; border-radius: 50%; border: none;
+        background: transparent; color: rgba(255,80,80,.5); font-size: 12px;
+        cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s;
+    }
+    .comment-delete-btn:hover { color: #ff6b6b; background: rgba(255,80,80,.15); }
+    .comment-text { color: rgba(255,255,255,.85); font-size: 13px; line-height: 1.5; }
+    .comment-time { color: rgba(255,255,255,.35); font-size: 11px; margin-top: 4px; }
+    .comment-composer { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+    .comment-composer-avatar {
+        width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+        overflow: hidden; border: 2px solid rgba(255,255,255,.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 13px; color: white; font-weight: 700;
+    }
+    .comment-composer-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .comment-input {
+        flex: 1; background: rgba(255,255,255,.07);
+        border: 1.5px solid rgba(255,255,255,.12); border-radius: 20px;
+        padding: 9px 15px; color: white; font-size: 13px; font-family: 'Outfit', sans-serif;
+    }
+    .comment-input:focus { outline: none; border-color: var(--neon-pink); }
+    .comment-input::placeholder { color: rgba(255,255,255,.4); }
+    .comment-send-btn {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+        border: none; color: white; font-size: 15px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .comment-send-btn:hover { transform: scale(1.12); }
+    .comment-send-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* MODAL */
+    .modal-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,.8);
+        backdrop-filter: blur(10px); z-index: 9999;
+        display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; animation: fadeIn .25s; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .modal {
+        background: rgba(15,15,25,.97); border-radius: 24px; width: 100%;
+        max-width: 680px; max-height: 90vh; display: flex; flex-direction: column;
+        border: 2px solid rgba(255,107,157,.3); box-shadow: 0 0 60px rgba(192,111,255,.2);
+    }
+    .modal-header {
+        padding: 22px 26px; border-bottom: 1px solid rgba(255,255,255,.08);
+        display: flex; align-items: center; gap: 16px;
+    }
+    .modal-header-avatar {
+        width: 54px; height: 54px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+        overflow: hidden; border: 2px solid rgba(255,255,255,.25);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px; color: white; font-weight: 900;
+    }
+    .modal-header-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .modal-header-info { flex: 1; }
+    .modal-header-name { color: white; font-weight: 700; font-size: 20px; }
+    .modal-header-status { color: rgba(255,255,255,.5); font-size: 13px; }
+    .modal-close {
+        width: 38px; height: 38px; border-radius: 50%;
+        background: rgba(255,255,255,.08); color: white; font-size: 22px;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: rgba(255,107,157,.3); }
+    .modal-content { flex: 1; overflow-y: auto; padding: 22px 26px; }
+    .modal-content::-webkit-scrollbar { width: 6px; }
+    .modal-content::-webkit-scrollbar-thumb { background: linear-gradient(135deg,var(--neon-pink),var(--neon-purple)); border-radius: 10px; }
+
+    /* MODAL PERSO BG PICKER */
+    .modal-bg-picker {
+        padding: 14px 26px; border-top: 1px solid rgba(255,255,255,.08);
+        display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .modal-bg-label { color: rgba(255,255,255,.6); font-size: 12px; font-weight: 700; }
+
+    /* MODAL COMPOSER */
+    .modal-composer {
+        padding: 16px 26px; border-top: 1px solid rgba(255,255,255,.08);
+        background: rgba(255,255,255,.02);
+    }
+    .modal-composer-input {
+        width: 100%; background: rgba(255,255,255,.07);
+        border: 1.5px solid rgba(255,255,255,.12); border-radius: 14px;
+        padding: 11px 14px; color: white; font-size: 14px;
+        resize: none; min-height: 60px; font-family: 'Outfit', sans-serif; margin-bottom: 10px;
+    }
+    .modal-composer-input:focus { outline: none; border-color: var(--neon-pink); }
+    .modal-composer-input::placeholder { color: rgba(255,255,255,.4); }
+    .modal-composer-actions { display: flex; gap: 8px; align-items: center; }
+    .modal-image-preview-wrap { position: relative; margin-bottom: 10px; display: none; }
+    .modal-image-preview-wrap img { width: 100%; max-height: 140px; object-fit: cover; border-radius: 10px; border: 2px solid var(--neon-pink); }
+    .modal-image-preview-remove {
+        position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 50%;
+        background: rgba(0,0,0,.75); color: white; border: none; font-size: 13px; cursor: pointer;
+    }
+
+    .modal-footer { padding: 18px 26px; border-top: 1px solid rgba(255,255,255,.08); display: flex; gap: 10px; }
+
+    .empty-state { text-align: center; padding: 50px 20px; color: rgba(255,255,255,.45); }
+    .empty-state-icon { font-size: 54px; margin-bottom: 14px; }
+    .empty-state-text { font-size: 15px; }
+
+    @media (max-width: 680px) {
+        body { padding: 10px; }
+        .profiles-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+        .modal { max-height: 88vh; }
+    }
+</style>
+```
+
+</head>
+<body>
+
+<div id="bgLayer"></div>
+
+<div class="header">
+    <div class="header-title">📰 Mur BubbleChat</div>
+    <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" onclick="window.location.href='chat.html'">💬 Chat</button>
+        <button class="btn btn-secondary btn-sm" onclick="window.location.href='arcade.html'">🕹️ Arcade</button>
+    </div>
+</div>
+
+<div class="tabs">
+    <div class="tab active" id="tabCommun" onclick="switchToCommun()">🌐 Mur commun</div>
+    <div class="tab" id="tabPerso" onclick="switchToPerso()">👤 Murs personnels</div>
+</div>
+
+<!-- MUR COMMUN -->
+
+<div id="communWallPage" class="active">
+    <div class="bg-picker-bar">
+        <span class="bg-picker-label">🎨 Mon fond :</span>
+        <div class="bg-swatches" id="communBgSwatches">
+            <div class="bg-swatch active" style="background:linear-gradient(135deg,#667eea,#764ba2)" data-type="gradient" data-value="linear-gradient(135deg,#667eea,#764ba2)" onclick="setCommunBg(this)"></div>
+            <div class="bg-swatch" style="background:linear-gradient(135deg,#f093fb,#f5576c)" data-type="gradient" data-value="linear-gradient(135deg,#f093fb,#f5576c)" onclick="setCommunBg(this)"></div>
+            <div class="bg-swatch" style="background:linear-gradient(135deg,#4facfe,#00f2fe)" data-type="gradient" data-value="linear-gradient(135deg,#4facfe,#00f2fe)" onclick="setCommunBg(this)"></div>
+            <div class="bg-swatch" style="background:linear-gradient(135deg,#43e97b,#38f9d7)" data-type="gradient" data-value="linear-gradient(135deg,#43e97b,#38f9d7)" onclick="setCommunBg(this)"></div>
+            <div class="bg-swatch" style="background:linear-gradient(135deg,#fa709a,#fee140)" data-type="gradient" data-value="linear-gradient(135deg,#fa709a,#fee140)" onclick="setCommunBg(this)"></div>
+            <div class="bg-swatch" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb)" data-type="gradient" data-value="linear-gradient(135deg,#a18cd1,#fbc2eb)" onclick="setCommunBg(this)"></div>
+            <div class="bg-swatch" style="background:#0f0f19" data-type="gradient" data-value="linear-gradient(135deg,#0f0f19,#1a1a2e)" onclick="setCommunBg(this)"></div>
+            <label class="bg-upload-label" title="Image personnalisée">🖼️<input type="file" accept="image/*" onchange="uploadCommunBg(this)"></label>
+        </div>
+    </div>
+    <div class="posts-container">
+        <div class="post-composer">
+            <textarea class="post-composer-input" id="communInput" placeholder="Quoi de neuf ?"></textarea>
+            <div class="image-preview-wrap" id="communImgPreview">
+                <img id="communImgPreviewImg" src="" alt="Aperçu">
+                <button class="image-preview-remove" onclick="removeCommunImage()">×</button>
+            </div>
+            <div class="post-composer-actions">
+                <label class="photo-btn-label">📷<input type="file" id="communImgInput" accept="image/*" onchange="handleCommunImage(this)"></label>
+                <button class="btn btn-primary" id="communPublishBtn" onclick="publishCommunPost()" style="flex:1">📤 Publier</button>
+            </div>
+            <div class="publish-error" id="communError"></div>
+        </div>
+        <div id="communPostsContainer"></div>
+    </div>
+</div>
+
+<!-- MURS PERSONNELS -->
+
+<div id="persoWallsPage">
+    <div class="profiles-grid" id="profilesGrid"></div>
+</div>
+
+<!-- MODAL MURS PERSO -->
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-header-avatar" id="modalAvatar">👤</div>
+            <div class="modal-header-info">
+                <div class="modal-header-name" id="modalName">Utilisateur</div>
+                <div class="modal-header-status" id="modalStatus">Mur personnel</div>
+            </div>
+            <div class="modal-close" onclick="closeModal()">×</div>
+        </div>
+        <!-- BG picker : visible uniquement par le propriétaire du mur -->
+        <div class="modal-bg-picker" id="modalBgPicker" style="display:none">
+            <span class="modal-bg-label">🎨 Fond de mon mur :</span>
+            <div class="bg-swatches" id="modalBgSwatches">
+                <div class="bg-swatch active" style="background:linear-gradient(135deg,#667eea,#764ba2)" data-type="gradient" data-value="linear-gradient(135deg,#667eea,#764ba2)" onclick="setPersonalBg(this)"></div>
+                <div class="bg-swatch" style="background:linear-gradient(135deg,#f093fb,#f5576c)" data-type="gradient" data-value="linear-gradient(135deg,#f093fb,#f5576c)" onclick="setPersonalBg(this)"></div>
+                <div class="bg-swatch" style="background:linear-gradient(135deg,#4facfe,#00f2fe)" data-type="gradient" data-value="linear-gradient(135deg,#4facfe,#00f2fe)" onclick="setPersonalBg(this)"></div>
+                <div class="bg-swatch" style="background:linear-gradient(135deg,#43e97b,#38f9d7)" data-type="gradient" data-value="linear-gradient(135deg,#43e97b,#38f9d7)" onclick="setPersonalBg(this)"></div>
+                <div class="bg-swatch" style="background:linear-gradient(135deg,#fa709a,#fee140)" data-type="gradient" data-value="linear-gradient(135deg,#fa709a,#fee140)" onclick="setPersonalBg(this)"></div>
+                <div class="bg-swatch" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb)" data-type="gradient" data-value="linear-gradient(135deg,#a18cd1,#fbc2eb)" onclick="setPersonalBg(this)"></div>
+                <div class="bg-swatch" style="background:#0f0f19" data-type="gradient" data-value="linear-gradient(135deg,#0f0f19,#1a1a2e)" onclick="setPersonalBg(this)"></div>
+                <label class="bg-upload-label" title="Image">🖼️<input type="file" accept="image/*" onchange="uploadPersonalBg(this)"></label>
+            </div>
+        </div>
+        <div class="modal-content" id="modalContent"></div>
+        <div class="modal-composer" id="modalComposer">
+            <textarea class="modal-composer-input" id="modalInput" placeholder="Écrire sur ce mur…"></textarea>
+            <div class="modal-image-preview-wrap" id="modalImgPreview">
+                <img id="modalImgPreviewImg" src="" alt="">
+                <button class="modal-image-preview-remove" onclick="removeModalImage()">×</button>
+            </div>
+            <div class="modal-composer-actions">
+                <label class="photo-btn-label" style="width:36px;height:36px;font-size:16px">📷<input type="file" id="modalImgInput" accept="image/*" onchange="handleModalImage(this)"></label>
+                <button class="btn btn-primary btn-sm" id="modalPublishBtn" onclick="publishPersoPost()" style="flex:1">📤 Publier</button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" style="flex:1" onclick="goToChat()">💬 Message</button>
+            <button class="btn btn-secondary" onclick="closeModal()">Fermer</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const supabase = createClient(
+    'https://unqlqgjmqpjvynluanbl.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVucWxxZ2ptcXBqdnlubHVhbmJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0ODkyNjUsImV4cCI6MjA4NzA2NTI2NX0.OWLcUJhOYvNWFiftMHwz5P-BdCkuqhbA9veSXxBkJVk'
+);
+
+const currentUserPrenom = localStorage.getItem('prenom') || 'Invité';
+const currentUserPhoto  = localStorage.getItem('userPhotoUrl') || localStorage.getItem('tempPhotoPreview') || null;
+let fingerprint = localStorage.getItem('browserFingerprint');
+if (!fingerprint) {
+    fingerprint = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem('browserFingerprint', fingerprint);
+}
+const currentUniqueId = currentUserPrenom + '_' + fingerprint;
+
+let communImageBlob   = null;
+let modalImageBlob    = null;
+let currentModalUserId = null;
+
+// ══════════════════════════════════════════════════
+// FOND MUR COMMUN — perso par user (stocké dans user_wall_prefs)
+// ══════════════════════════════════════════════════
+async function loadCommunBg() {
+    const savedVal  = localStorage.getItem('communBgValue');
+    const savedType = localStorage.getItem('communBgType') || 'gradient';
+    if (savedVal) { applyBg(savedVal, savedType); markSwatch('communBgSwatches', savedVal); return; }
+    const { data } = await supabase.from('user_wall_prefs').select('bg_type,bg_value').eq('unique_id', currentUniqueId).maybeSingle();
+    if (data?.bg_value) {
+        applyBg(data.bg_value, data.bg_type || 'gradient');
+        markSwatch('communBgSwatches', data.bg_value);
+        localStorage.setItem('communBgValue', data.bg_value);
+        localStorage.setItem('communBgType',  data.bg_type || 'gradient');
+    }
+}
+
+window.setCommunBg = async function(el) {
+    const type = el.dataset.type, value = el.dataset.value;
+    applyBg(value, type);
+    markSwatch('communBgSwatches', value);
+    localStorage.setItem('communBgValue', value);
+    localStorage.setItem('communBgType',  type);
+    await supabase.from('user_wall_prefs').upsert({ unique_id: currentUniqueId, bg_type: type, bg_value: value, updated_at: new Date().toISOString() });
+};
+
+window.uploadCommunBg = async function(input) {
+    const file = input.files[0]; if (!file) return;
+    const url = await uploadToImgBB(file);
+    if (!url) { alert('Erreur upload fond'); return; }
+    applyBg(url, 'image');
+    markSwatch('communBgSwatches', null);
+    localStorage.setItem('communBgValue', url);
+    localStorage.setItem('communBgType',  'image');
+    await supabase.from('user_wall_prefs').upsert({ unique_id: currentUniqueId, bg_type: 'image', bg_value: url, updated_at: new Date().toISOString() });
+};
+
+// ══════════════════════════════════════════════════
+// FOND MUR PERSO — défini par le propriétaire, vu par tous
+// ══════════════════════════════════════════════════
+async function loadPersonalBg(ownerUniqueId) {
+    const { data } = await supabase.from('profiles').select('wall_bg_type,wall_bg_value').eq('unique_id', ownerUniqueId).maybeSingle();
+    if (data?.wall_bg_value) {
+        applyBg(data.wall_bg_value, data.wall_bg_type || 'gradient');
+        markSwatch('modalBgSwatches', data.wall_bg_value);
+    }
+}
+
+window.setPersonalBg = async function(el) {
+    const type = el.dataset.type, value = el.dataset.value;
+    applyBg(value, type);
+    markSwatch('modalBgSwatches', value);
+    await supabase.from('profiles').update({ wall_bg_type: type, wall_bg_value: value }).eq('unique_id', currentUniqueId);
+};
+
+window.uploadPersonalBg = async function(input) {
+    const file = input.files[0]; if (!file) return;
+    const url = await uploadToImgBB(file);
+    if (!url) { alert('Erreur upload fond'); return; }
+    applyBg(url, 'image');
+    markSwatch('modalBgSwatches', null);
+    await supabase.from('profiles').update({ wall_bg_type: 'image', wall_bg_value: url }).eq('unique_id', currentUniqueId);
+};
+
+function applyBg(value, type) {
+    const bg = document.getElementById('bgLayer');
+    if (type === 'image') {
+        bg.style.background = '';
+        bg.style.backgroundImage = `url('${value}')`;
+        bg.classList.add('has-image');
+    } else {
+        bg.style.backgroundImage = '';
+        bg.style.background = value;
+        bg.classList.remove('has-image');
+    }
+}
+
+function markSwatch(containerId, value) {
+    document.querySelectorAll(`#${containerId} .bg-swatch`).forEach(s => {
+        s.classList.toggle('active', value !== null && s.dataset.value === value);
+    });
+}
+
+// ══════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════
+window.switchToCommun = function() {
+    document.getElementById('tabCommun').classList.add('active');
+    document.getElementById('tabPerso').classList.remove('active');
+    document.getElementById('communWallPage').classList.add('active');
+    document.getElementById('persoWallsPage').classList.remove('active');
+    loadCommunBg();
+    loadCommunWall();
+};
+
+window.switchToPerso = function() {
+    document.getElementById('tabCommun').classList.remove('active');
+    document.getElementById('tabPerso').classList.add('active');
+    document.getElementById('communWallPage').classList.remove('active');
+    document.getElementById('persoWallsPage').classList.add('active');
+    loadPersoProfiles();
+};
+
+// ══════════════════════════════════════════════════
+// IMAGE HANDLERS
+// ══════════════════════════════════════════════════
+window.handleCommunImage = function(input) {
+    const file = input.files[0]; if (!file) { communImageBlob = null; return; }
+    communImageBlob = file;
+    const r = new FileReader();
+    r.onload = e => { document.getElementById('communImgPreviewImg').src = e.target.result; document.getElementById('communImgPreview').style.display = 'block'; };
+    r.readAsDataURL(file);
+};
+window.removeCommunImage = function() {
+    document.getElementById('communImgInput').value = '';
+    document.getElementById('communImgPreviewImg').src = '';
+    document.getElementById('communImgPreview').style.display = 'none';
+    communImageBlob = null;
+};
+window.handleModalImage = function(input) {
+    const file = input.files[0]; if (!file) { modalImageBlob = null; return; }
+    modalImageBlob = file;
+    const r = new FileReader();
+    r.onload = e => { document.getElementById('modalImgPreviewImg').src = e.target.result; document.getElementById('modalImgPreview').style.display = 'block'; };
+    r.readAsDataURL(file);
+};
+window.removeModalImage = function() {
+    document.getElementById('modalImgInput').value = '';
+    document.getElementById('modalImgPreviewImg').src = '';
+    document.getElementById('modalImgPreview').style.display = 'none';
+    modalImageBlob = null;
+};
+
+// ══════════════════════════════════════════════════
+// IMGBB — Upload gratuit et illimité (remplace Supabase Storage)
+// Clé API ImgBB : à remplacer par votre propre clé sur https://api.imgbb.com/
+// ══════════════════════════════════════════════════
+const IMGBB_API_KEY = 'dbd9cc12a3d83f29974db5059ac4c08c';
+
+async function uploadToImgBB(fileOrBlob) {
+    const formData = new FormData();
+    formData.append('image', fileOrBlob);
+    try {
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+            method: 'POST',
+            body: formData
+        });
+        const json = await res.json();
+        if (!json.success) { console.error('ImgBB error:', json); return null; }
+        return json.data.url;
+    } catch(e) { console.error('ImgBB upload failed:', e); return null; }
+}
+
+async function uploadImage(blob, prefix) {
+    return await uploadToImgBB(blob);
+}
+
+// ══════════════════════════════════════════════════
+// PUBLISH
+// ══════════════════════════════════════════════════
+window.publishCommunPost = async function() {
+    const input = document.getElementById('communInput');
+    const content = input?.value.trim() || '';
+    const errorDiv = document.getElementById('communError');
+    const btn = document.getElementById('communPublishBtn');
+    if (errorDiv) errorDiv.style.display = 'none';
+    if (!content) { alert('Écrivez quelque chose !'); return; }
+    btn.disabled = true; btn.textContent = '⏳ Envoi…';
+    try {
+        const imageUrl = communImageBlob ? await uploadImage(communImageBlob, 'commun') : null;
+        const { error } = await supabase.from('wall_posts').insert({
+            author_id: currentUniqueId, wall_owner_id: 'COMMUN',
+            author_name: currentUserPrenom, author_photo: currentUserPhoto,
+            content, image_url: imageUrl, is_public: true
+        });
+        if (error) throw error;
+        input.value = ''; removeCommunImage();
+        await loadCommunWall();
+    } catch(err) {
+        if (errorDiv) { errorDiv.textContent = '❌ ' + (err.message||'Erreur'); errorDiv.style.display = 'block'; }
+    } finally { btn.disabled = false; btn.innerHTML = '📤 Publier'; }
+};
+
+window.publishPersoPost = async function() {
+    if (!currentModalUserId) return;
+    const input = document.getElementById('modalInput');
+    const content = input?.value.trim() || '';
+    if (!content) { alert('Écrivez quelque chose !'); return; }
+    const btn = document.getElementById('modalPublishBtn');
+    btn.disabled = true; btn.textContent = '⏳ Envoi…';
+    try {
+        const imageUrl = modalImageBlob ? await uploadImage(modalImageBlob, 'perso') : null;
+        const { error } = await supabase.from('wall_posts').insert({
+            author_id: currentUniqueId, wall_owner_id: currentModalUserId,
+            author_name: currentUserPrenom, author_photo: currentUserPhoto,
+            content, image_url: imageUrl, is_public: true
+        });
+        if (error) throw error;
+        input.value = ''; removeModalImage();
+        await loadPersoWallPosts(currentModalUserId);
+    } catch(err) { alert('Erreur : ' + (err.message||'Inconnue')); }
+    finally { btn.disabled = false; btn.innerHTML = '📤 Publier'; }
+};
+
+// ══════════════════════════════════════════════════
+// DELETE / LIKE / COMMENT
+// ══════════════════════════════════════════════════
+async function deletePost(postId, isPerso) {
+    if (!confirm('Supprimer cette publication ?')) return;
+    await supabase.from('wall_comments').delete().eq('post_id', postId);
+    await supabase.from('wall_likes').delete().eq('post_id', postId);
+    const { error } = await supabase.from('wall_posts').delete().eq('id', postId).eq('author_id', currentUniqueId);
+    if (error) { alert('Erreur suppression'); return; }
+    if (isPerso) await loadPersoWallPosts(currentModalUserId);
+    else await loadCommunWall();
+}
+
+async function toggleLike(postId, isLiked, isPerso) {
+    if (isLiked) {
+        await supabase.from('wall_likes').delete().eq('post_id', postId).eq('user_id', currentUniqueId);
+    } else {
+        await supabase.from('wall_likes').insert({
+            post_id: postId, user_id: currentUniqueId,
+            user_name: currentUserPrenom, user_photo: currentUserPhoto
+        });
+    }
+    if (isPerso) await loadPersoWallPosts(currentModalUserId);
+    else await loadCommunWall();
+}
+
+async function sendComment(postId, inputEl, isPerso) {
+    const content = inputEl.value.trim(); if (!content) return;
+    inputEl.disabled = true;
+    const { error } = await supabase.from('wall_comments').insert({
+        post_id: postId, author_id: currentUniqueId,
+        author_name: currentUserPrenom, author_photo: currentUserPhoto, content
+    });
+    inputEl.disabled = false;
+    if (!error) inputEl.value = '';
+    if (isPerso) await loadPersoWallPosts(currentModalUserId);
+    else await loadCommunWall();
+}
+
+async function deleteComment(commentId, isPerso) {
+    if (!confirm('Supprimer ce commentaire ?')) return;
+    await supabase.from('wall_comments').delete().eq('id', commentId).eq('author_id', currentUniqueId);
+    if (isPerso) await loadPersoWallPosts(currentModalUserId);
+    else await loadCommunWall();
+}
+
+// ══════════════════════════════════════════════════
+// LOAD COMMUN
+// ══════════════════════════════════════════════════
+async function loadCommunWall() {
+    const container = document.getElementById('communPostsContainer');
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div></div>';
+    try {
+        const { data: posts, error } = await supabase.from('wall_posts').select('*')
+            .eq('wall_owner_id', 'COMMUN').order('created_at', { ascending: false });
+        if (error) throw error;
+        if (!posts?.length) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-text">Soyez le premier à publier !</div></div>';
+            return;
+        }
+        const postIds = posts.map(p => p.id);
+        const [{ data: allLikes }, { data: allComments }] = await Promise.all([
+            supabase.from('wall_likes').select('*').in('post_id', postIds),
+            supabase.from('wall_comments').select('*').in('post_id', postIds).order('created_at', { ascending: true })
+        ]);
+        container.innerHTML = '';
+        posts.forEach(post => {
+            const likes    = (allLikes    || []).filter(l => l.post_id === post.id);
+            const comments = (allComments || []).filter(c => c.post_id === post.id);
+            container.appendChild(renderPost(post, likes, comments, false));
+        });
+    } catch(err) {
+        console.error(err);
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Erreur de chargement</div></div>';
+    }
+}
+
+// ══════════════════════════════════════════════════
+// LOAD PERSO PROFILES
+// ══════════════════════════════════════════════════
+async function loadPersoProfiles() {
+    const grid = document.getElementById('profilesGrid');
+    grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div></div>';
+    try {
+        const { data: profiles, error } = await supabase.from('profiles').select('*').order('prenom');
+        if (error) throw error;
+        if (!profiles?.length) {
+            grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">Aucun profil</div></div>';
+            return;
+        }
+        grid.innerHTML = '';
+        profiles.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'profile-card';
+            card.onclick = () => openPersoModal(p);
+            const av = p.photo_url ? `<img src="${esc(p.photo_url)}">` : esc((p.prenom||'?')[0].toUpperCase());
+            card.innerHTML = `<div class="profile-avatar">${av}<div class="status-dot ${p.is_online?'online':'offline'}"></div></div><div class="profile-name">${esc(p.prenom)}</div>`;
+            grid.appendChild(card);
+        });
+    } catch(err) { console.error(err); grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div></div>'; }
+}
+
+// ══════════════════════════════════════════════════
+// OPEN PERSO MODAL
+// ══════════════════════════════════════════════════
+async function openPersoModal(profile) {
+    currentModalUserId = profile.unique_id;
+    const modalAvatar = document.getElementById('modalAvatar');
+    modalAvatar.innerHTML = profile.photo_url ? `<img src="${esc(profile.photo_url)}">` : esc((profile.prenom||'?')[0].toUpperCase());
+    document.getElementById('modalName').textContent   = profile.prenom;
+    document.getElementById('modalStatus').textContent = profile.is_online ? '🟢 En ligne' : '⚫ Hors ligne';
+
+    // BG picker : seulement pour le propriétaire
+    const isOwner = profile.unique_id === currentUniqueId;
+    document.getElementById('modalBgPicker').style.display = isOwner ? 'flex' : 'none';
+
+    document.getElementById('modalOverlay').classList.add('open');
+    document.getElementById('modalContent').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div></div>';
+
+    await loadPersonalBg(profile.unique_id);
+    await loadPersoWallPosts(profile.unique_id);
+}
+
+async function loadPersoWallPosts(ownerUniqueId) {
+    const container = document.getElementById('modalContent');
+    try {
+        const { data: posts, error } = await supabase.from('wall_posts').select('*')
+            .eq('wall_owner_id', ownerUniqueId).order('created_at', { ascending: false });
+        if (error) throw error;
+        if (!posts?.length) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-text">Aucune publication encore</div></div>';
+            return;
+        }
+        const postIds = posts.map(p => p.id);
+        const [{ data: allLikes }, { data: allComments }] = await Promise.all([
+            supabase.from('wall_likes').select('*').in('post_id', postIds),
+            supabase.from('wall_comments').select('*').in('post_id', postIds).order('created_at', { ascending: true })
+        ]);
+        container.innerHTML = '';
+        posts.forEach(post => {
+            const likes    = (allLikes    || []).filter(l => l.post_id === post.id);
+            const comments = (allComments || []).filter(c => c.post_id === post.id);
+            container.appendChild(renderPost(post, likes, comments, true));
+        });
+    } catch(err) { console.error(err); container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div></div>'; }
+}
+
+// ══════════════════════════════════════════════════
+// RENDER POST
+// ══════════════════════════════════════════════════
+function renderPost(post, likes, comments, isPerso) {
+    const el = document.createElement('div');
+    el.className = 'post';
+    const isOwn   = post.author_id === currentUniqueId;
+    const isLiked = likes.some(l => l.user_id === currentUniqueId);
+    const av      = post.author_photo ? `<img src="${esc(post.author_photo)}">` : esc((post.author_name||'?')[0].toUpperCase());
+    const imgHTML = post.image_url ? `<img src="${esc(post.image_url)}" class="post-image">` : '';
+    const likersTxt = likes.length
+        ? likes.slice(0,5).map(l => esc(l.user_name)).join(', ') + (likes.length > 5 ? ` et ${likes.length-5} autres` : '')
+        : '';
+    const deleteBtn = isOwn ? `<button class="post-delete-btn" title="Supprimer" onclick="window.__deletePost(${post.id},${isPerso})">🗑️</button>` : '';
+
+    el.innerHTML = `
+        <div class="post-header">
+            <div class="post-avatar">${av}</div>
+            <div class="post-header-info">
+                <div class="post-author-name">${esc(post.author_name)}</div>
+                <div class="post-time">${formatTime(post.created_at)}</div>
+            </div>
+            ${deleteBtn}
+        </div>
+        <div class="post-content">${esc(post.content)}</div>
+        ${imgHTML}
+        <div class="post-actions">
+            <div class="post-action ${isLiked?'liked':''}" onclick="window.__toggleLike(${post.id},${isLiked},${isPerso})">
+                <span>${isLiked?'❤️':'🤍'}</span><span>${likes.length}</span>
+            </div>
+            <div class="post-action" onclick="window.__toggleComments(this)">
+                <span>💬</span><span>${comments.length}</span>
+            </div>
+        </div>
+        ${likersTxt ? `<div class="likes-names">❤️ ${likersTxt}</div>` : ''}
+        <div class="comments-section">
+            ${comments.map(c => renderComment(c, isPerso)).join('')}
+            <div class="comment-composer">
+                <div class="comment-composer-avatar">${currentUserPhoto ? `<img src="${esc(currentUserPhoto)}">` : esc((currentUserPrenom||'?')[0].toUpperCase())}</div>
+                <input class="comment-input" placeholder="Commenter…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();window.__sendComment(${post.id},this,${isPerso})}">
+                <button class="comment-send-btn" onclick="window.__sendComment(${post.id},this.previousElementSibling,${isPerso})">➤</button>
+            </div>
+        </div>`;
+    return el;
+}
+
+function renderComment(c, isPerso) {
+    const isOwn   = c.author_id === currentUniqueId;
+    const av      = c.author_photo ? `<img src="${esc(c.author_photo)}">` : esc((c.author_name||'?')[0].toUpperCase());
+    const delBtn  = isOwn ? `<button class="comment-delete-btn" onclick="window.__deleteComment(${c.id},${isPerso})">✕</button>` : '';
+    return `<div class="comment">
+        <div class="comment-avatar">${av}</div>
+        <div class="comment-content">
+            <div class="comment-header"><span class="comment-author">${esc(c.author_name)}</span>${delBtn}</div>
+            <div class="comment-text">${esc(c.content)}</div>
+            <div class="comment-time">${formatTime(c.created_at)}</div>
+        </div>
+    </div>`;
+}
+
+// Handlers globaux pour les onclick inline
+window.__deletePost     = (id, p) => deletePost(id, p);
+window.__toggleLike     = (id, liked, p) => toggleLike(id, liked, p);
+window.__sendComment    = (id, input, p) => sendComment(id, input, p);
+window.__deleteComment  = (id, p) => deleteComment(id, p);
+window.__toggleComments = btn => btn.closest('.post').querySelector('.comments-section').classList.toggle('open');
+
+window.closeModal = function() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    currentModalUserId = null;
+    loadCommunBg(); // Restaure le fond commun
+};
+window.goToChat = () => window.location.href = 'chat.html';
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+function esc(str) {
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatTime(iso) {
+    if (!iso) return '';
+    const d = new Date(iso), diff = Date.now() - d;
+    const m = Math.floor(diff/60000), h = Math.floor(diff/3600000), j = Math.floor(diff/86400000);
+    if (m < 1) return 'À l\'instant';
+    if (m < 60) return m + ' min';
+    if (h < 24) return h + ' h';
+    if (j < 7) return j + ' j';
+    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short' });
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+loadCommunBg();
+loadCommunWall();
+</script>
+
+</body>
+</html>

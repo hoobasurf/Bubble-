@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BubbleChat - Connexion</title>
+<style>
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+}
+
+body {
+font-family: ‘Segoe UI’, Tahoma, Geneva, Verdana, sans-serif;
+height: 100vh;
+overflow: hidden;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+position: relative;
+transition: background 0.5s ease;
+}
+
+/* 20 THÈMES */
+body.theme-aquarium { background: linear-gradient(135deg, #0077be 0%, #00a8e8 50%, #4dd2ff 100%); }
+body.theme-yellow { background: linear-gradient(135deg, #f4d03f 0%, #ffd700 50%, #ffed4e 100%); }
+body.theme-green { background: linear-gradient(135deg, #0b6623 0%, #228b22 50%, #7cfc00 100%); }
+body.theme-violet { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #b06ab3 100%); }
+body.theme-ironman { background: linear-gradient(135deg, #8b0000 0%, #dc143c 50%, #ff6347 100%); }
+body.theme-savane { background: linear-gradient(135deg, #ff4500 0%, #ff8c00 50%, #ffa500 100%); }
+body.theme-pink { background: linear-gradient(135deg, #ff1493 0%, #ff69b4 50%, #ffb6c1 100%); }
+body.theme-cyan { background: linear-gradient(135deg, #00ced1 0%, #40e0d0 50%, #afeeee 100%); }
+body.theme-gold { background: linear-gradient(135deg, #b8860b 0%, #daa520 50%, #ffd700 100%); }
+body.theme-emerald { background: linear-gradient(135deg, #134e5e 0%, #3a7e6f 50%, #50c878 100%); }
+body.theme-peach { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ff9a9e 100%); }
+body.theme-white { background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%); }
+body.theme-brown { background: linear-gradient(135deg, #3e2723 0%, #5d4037 50%, #8d6e63 100%); }
+body.theme-lime { background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 50%, #00ff00 100%); }
+body.theme-indigo { background: linear-gradient(135deg, #2c003e 0%, #4b0082 50%, #9370db 100%); }
+body.theme-turquoise { background: linear-gradient(135deg, #17a2b8 0%, #1dd1a1 50%, #54e8d4 100%); }
+body.theme-magenta { background: linear-gradient(135deg, #c71585 0%, #ff00ff 50%, #ee82ee 100%); }
+body.theme-silver { background: linear-gradient(135deg, #708090 0%, #c0c0c0 50%, #dcdcdc 100%); }
+body.theme-coral { background: linear-gradient(135deg, #ff6b6b 0%, #ff7f50 50%, #ffa07a 100%); }
+body.theme-black { background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #333333 100%); }
+body.custom-bg { background-size: cover !important; background-position: center !important; background-attachment: fixed !important; }
+
+#particles-bg { position: absolute; width: 100%; height: 100%; overflow: hidden; z-index: 0; }
+.particle { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.1); animation: float linear infinite; backdrop-filter: blur(3px); }
+
+@keyframes float {
+0% { transform: translateY(100vh) translateX(0) rotate(0deg); opacity: 0; }
+10% { opacity: 0.3; }
+90% { opacity: 0.3; }
+100% { transform: translateY(-100px) translateX(100px) rotate(360deg); opacity: 0; }
+}
+
+.login-container { position: relative; z-index: 10; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+.login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(30px); border-radius: 30px; padding: 50px 40px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); min-width: 400px; animation: slideIn 0.6s ease-out; position: relative; overflow: hidden; }
+
+@keyframes slideIn {
+from { opacity: 0; transform: translateY(50px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.login-card::before { content: ‘’; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent); transform: rotate(45deg); animation: shine 3s infinite; }
+
+@keyframes shine {
+0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.logo-circle { width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 30px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05)); border: 3px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; font-size: 48px; animation: pulse 2s ease-in-out infinite; box-shadow: 0 0 30px rgba(255, 255, 255, 0.2); position: relative; overflow: hidden; }
+.logo-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+@keyframes pulse {
+0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(255, 255, 255, 0.2); }
+50% { transform: scale(1.05); box-shadow: 0 0 50px rgba(255, 255, 255, 0.3); }
+}
+
+.input-group { margin-bottom: 20px; position: relative; }
+.input-group input { width: 100%; padding: 15px 20px; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 15px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 16px; outline: none; transition: all 0.3s ease; backdrop-filter: blur(10px); }
+.input-group input::placeholder { color: rgba(255, 255, 255, 0.6); }
+.input-group input:focus { border-color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+
+.photo-btn-neon { background: linear-gradient(135deg, #ff6b9d 0%, #c06fff 100%); border: none; color: white; padding: 18px 20px; border-radius: 20px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 0 20px rgba(255, 107, 157, 0.5), 0 0 40px rgba(192, 111, 255, 0.3); display: flex; align-items: center; gap: 10px; justify-content: center; width: 100%; animation: neonPulse 2s ease-in-out infinite; margin-bottom: 20px; }
+.photo-btn-neon:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(255, 107, 157, 0.8), 0 0 60px rgba(192, 111, 255, 0.5); }
+
+@keyframes neonPulse {
+0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 157, 0.5), 0 0 40px rgba(192, 111, 255, 0.3); }
+50% { box-shadow: 0 0 30px rgba(255, 107, 157, 0.8), 0 0 60px rgba(192, 111, 255, 0.5); }
+}
+
+.btn { width: 100%; padding: 15px; border: none; border-radius: 15px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-bottom: 12px; position: relative; overflow: hidden; letter-spacing: 1px; }
+.btn-primary { background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1)); color: white; border: 2px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(10px); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2)); }
+.btn-secondary { background: rgba(255, 255, 255, 0.05); color: white; border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); }
+.btn-secondary:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
+
+.theme-selector { display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 12px; margin-top: 25px; padding-top: 25px; border-top: 1px solid rgba(255, 255, 255, 0.15); max-height: 280px; overflow-y: auto; padding-right: 10px; }
+.theme-selector::-webkit-scrollbar { width: 6px; }
+.theme-selector::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+.theme-selector::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+
+.theme-option { width: 65px; height: 65px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s ease; position: relative; justify-self: center; }
+.theme-option:hover { transform: scale(1.15); box-shadow: 0 0 25px rgba(255, 255, 255, 0.6); }
+.theme-option.active { border-color: white; box-shadow: 0 0 30px rgba(255, 255, 255, 0.9); transform: scale(1.1); }
+
+.theme-btn-custom { width: 65px; height: 65px; border-radius: 50%; border: 3px solid rgba(255, 107, 157, 0.6); background: linear-gradient(135deg, #ff6b9d 0%, #c06fff 100%); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 28px; transition: all 0.3s ease; position: relative; box-shadow: 0 0 15px rgba(255, 107, 157, 0.4); justify-self: center; }
+.theme-btn-custom:hover { transform: scale(1.15); box-shadow: 0 0 30px rgba(255, 107, 157, 0.8); border-color: white; }
+.theme-btn-custom input[type=“file”] { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+
+.modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px); justify-content: center; align-items: center; z-index: 1000; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-content { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(30px); border-radius: 25px; padding: 40px; border: 1px solid rgba(255, 255, 255, 0.2); text-align: center; animation: slideIn 0.4s ease-out; min-width: 300px; }
+.modal-content h3 { color: white; font-size: 28px; margin-bottom: 15px; font-weight: 300; }
+.modal-content p { color: rgba(255, 255, 255, 0.9); margin-bottom: 25px; font-size: 16px; }
+
+@media (max-width: 500px) {
+.login-card { min-width: 90%; padding: 40px 30px; }
+.theme-selector { grid-template-columns: repeat(auto-fill, minmax(55px, 1fr)); gap: 10px; }
+.theme-option, .theme-btn-custom { width: 55px; height: 55px; }
+}
+</style>
+
+</head>
+<body class="theme-violet">
+
+<div id="particles-bg"></div>
+
+<div class="login-container">
+  <div class="login-card">
+    <div class="logo-circle" id="logoCircle">💬</div>
+
+```
+<button class="photo-btn-neon" id="photoBtn"><span>✨</span><span>Ajouter Photo</span></button>
+<input type="file" id="photoInput" accept="image/*" style="display:none;">
+
+<div class="input-group">
+  <input type="text" id="prenom" placeholder="✨ Votre prénom" required>
+</div>
+
+<div class="input-group">
+  <input type="password" id="password" placeholder="🔐 Mot de passe">
+</div>
+
+<button class="btn btn-primary" id="connexionBtn">Se connecter</button>
+
+<div class="theme-selector">
+  <div class="theme-option" data-theme="aquarium" style="background: linear-gradient(135deg, #0077be 0%, #4dd2ff 100%);" title="Aquarium 🐠"></div>
+  <div class="theme-option" data-theme="yellow" style="background: linear-gradient(135deg, #f4d03f 0%, #ffed4e 100%);" title="Jaune Électrique ⚡"></div>
+  <div class="theme-option" data-theme="green" style="background: linear-gradient(135deg, #0b6623 0%, #7cfc00 100%);" title="Vert Forêt 🌲"></div>
+  <div class="theme-option active" data-theme="violet" style="background: linear-gradient(135deg, #667eea 0%, #b06ab3 100%);" title="Violet Futuriste 🌌"></div>
+  <div class="theme-option" data-theme="ironman" style="background: linear-gradient(135deg, #8b0000 0%, #ff6347 100%);" title="Rouge Iron Man 🦾"></div>
+  <div class="theme-option" data-theme="savane" style="background: linear-gradient(135deg, #ff4500 0%, #ffa500 100%);" title="Orange Savane 🌅"></div>
+  <div class="theme-option" data-theme="pink" style="background: linear-gradient(135deg, #ff1493 0%, #ffb6c1 100%);" title="Rose Néon 💖"></div>
+  <div class="theme-option" data-theme="cyan" style="background: linear-gradient(135deg, #00ced1 0%, #afeeee 100%);" title="Cyan Glacial ❄️"></div>
+  <div class="theme-option" data-theme="gold" style="background: linear-gradient(135deg, #b8860b 0%, #ffd700 100%);" title="Or Luxe 👑"></div>
+  <div class="theme-option" data-theme="emerald" style="background: linear-gradient(135deg, #134e5e 0%, #50c878 100%);" title="Émeraude 💎"></div>
+  <div class="theme-option" data-theme="peach" style="background: linear-gradient(135deg, #ffecd2 0%, #ff9a9e 100%);" title="Pêche Pastel 🍑"></div>
+  <div class="theme-option" data-theme="white" style="background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);" title="Blanc Pur ⚪"></div>
+  <div class="theme-option" data-theme="brown" style="background: linear-gradient(135deg, #3e2723 0%, #8d6e63 100%);" title="Brun Chocolat 🍫"></div>
+  <div class="theme-option" data-theme="lime" style="background: linear-gradient(135deg, #d4fc79 0%, #00ff00 100%);" title="Lime Acide 🟢"></div>
+  <div class="theme-option" data-theme="indigo" style="background: linear-gradient(135deg, #2c003e 0%, #9370db 100%);" title="Indigo Mystique 🔮"></div>
+  <div class="theme-option" data-theme="turquoise" style="background: linear-gradient(135deg, #17a2b8 0%, #54e8d4 100%);" title="Turquoise Tropical 🏝️"></div>
+  <div class="theme-option" data-theme="magenta" style="background: linear-gradient(135deg, #c71585 0%, #ee82ee 100%);" title="Magenta Vibrant 💜"></div>
+  <div class="theme-option" data-theme="silver" style="background: linear-gradient(135deg, #708090 0%, #dcdcdc 100%);" title="Argent Métallique 🤖"></div>
+  <div class="theme-option" data-theme="coral" style="background: linear-gradient(135deg, #ff6b6b 0%, #ffa07a 100%);" title="Corail Océan 🪸"></div>
+  <div class="theme-option" data-theme="black" style="background: linear-gradient(135deg, #000000 0%, #333333 100%);" title="Noir Espace 🖤"></div>
+  <div class="theme-btn-custom" title="Photo personnalisée 📸">🌌<input type="file" id="customBgInput" accept="image/*"></div>
+</div>
+```
+
+  </div>
+</div>
+
+<div id="choiceModal" class="modal">
+  <div class="modal-content">
+    <h3>👋 Bonjour Steph !</h3>
+    <p>Choisissez votre espace :</p>
+    <button class="btn btn-primary" id="creationBtn">🎨 Création</button>
+    <button class="btn btn-secondary" id="visiteBtn">👀 Visite</button>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+// ✅ CORRECTION : Utiliser LA MÊME base Supabase que chat.html
+const supabase = createClient(
+  'https://unqlqgjmqpjvynluanbl.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVucWxxZ2ptcXBqdnlubHVhbmJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0ODkyNjUsImV4cCI6MjA4NzA2NTI2NX0.OWLcUJhOYvNWFiftMHwz5P-BdCkuqhbA9veSXxBkJVk'
+);
+
+const photoBtn = document.getElementById('photoBtn');
+const photoInput = document.getElementById('photoInput');
+const prenomInput = document.getElementById('prenom');
+const particlesBg = document.getElementById('particles-bg');
+let userPhotoBase64 = null;
+
+function createParticles() {
+  particlesBg.innerHTML = '';
+  for(let i = 0; i < 20; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    const size = Math.random() * 60 + 20;
+    particle.style.width = size + 'px';
+    particle.style.height = size + 'px';
+    particle.style.left = Math.random() * 100 + '%';
+    particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+    particle.style.animationDelay = Math.random() * 5 + 's';
+    particlesBg.appendChild(particle);
+  }
+}
+createParticles();
+
+document.querySelectorAll('.theme-option').forEach(option => {
+  option.addEventListener('click', () => {
+    const theme = option.dataset.theme;
+    document.body.className = 'theme-' + theme;
+    document.querySelectorAll('.theme-option').forEach(o => o.classList.remove('active'));
+    option.classList.add('active');
+    localStorage.setItem('theme', theme);
+  });
+});
+
+const savedTheme = localStorage.getItem('theme') || 'violet';
+if(savedTheme && savedTheme !== 'custom') {
+  document.body.className = 'theme-' + savedTheme;
+  document.querySelectorAll('.theme-option').forEach(o => o.classList.remove('active'));
+  const savedOption = document.querySelector(`[data-theme="${savedTheme}"]`);
+  if(savedOption) savedOption.classList.add('active');
+}
+
+const customBgInput = document.getElementById('customBgInput');
+if(customBgInput) {
+  customBgInput.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageUrl = e.target.result;
+      document.body.style.backgroundImage = `url(${imageUrl})`;
+      document.body.className = 'custom-bg';
+      document.querySelectorAll('.theme-option').forEach(o => o.classList.remove('active'));
+      localStorage.setItem('customBg', imageUrl);
+      localStorage.setItem('theme', 'custom');
+    };
+    reader.readAsDataURL(file);
+  };
+}
+
+const savedCustomBg = localStorage.getItem('customBg');
+if(savedCustomBg && savedTheme === 'custom') {
+  document.body.style.backgroundImage = `url(${savedCustomBg})`;
+  document.body.className = 'custom-bg';
+}
+
+photoBtn.onclick = () => {
+  photoInput.click();
+};
+
+photoInput.onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const imageUrl = e.target.result;
+    userPhotoBase64 = imageUrl;
+    document.getElementById('logoCircle').innerHTML = `<img src="${imageUrl}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+    localStorage.setItem('userPhotoUrl', imageUrl);
+  };
+  reader.readAsDataURL(file);
+};
+
+document.getElementById('connexionBtn').onclick = async () => {
+  const prenom = prenomInput.value.trim();
+  const password = document.getElementById('password').value;
+
+  if(!prenom) {
+    alert("⚠️ Veuillez saisir votre prénom");
+    return;
+  }
+
+  localStorage.setItem('prenom', prenom);
+  
+  if (userPhotoBase64) {
+    localStorage.setItem('userPhotoUrl', userPhotoBase64);
+  }
+
+  // CRÉER OU METTRE À JOUR LE PROFIL DANS SUPABASE
+  try {
+    // ✅ Créer un identifiant unique basé sur le prénom + timestamp du navigateur
+    // APRÈS (correct) :
+let browserFingerprint = localStorage.getItem('browserFingerprint');
+if (!browserFingerprint) {
+    browserFingerprint = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem('browserFingerprint', browserFingerprint);
+}
+
+    localStorage.setItem('browserFingerprint', browserFingerprint);
+    
+    const uniqueId = `${prenom}_${browserFingerprint}`;
+
+    // Vérifier si CE profil spécifique existe déjà
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('unique_id', uniqueId)
+      .single();
+
+    if (existing) {
+      // Mettre à jour le profil existant
+      await supabase
+        .from('profiles')
+        .update({ 
+          is_online: true,
+          photo_url: userPhotoBase64 || existing.photo_url,
+          last_seen: new Date().toISOString()
+        })
+        .eq('unique_id', uniqueId);
+      
+      console.log('✅ Profil mis à jour:', uniqueId);
+    } else {
+      // Créer un nouveau profil avec un ID unique
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          unique_id: uniqueId,
+          prenom: prenom,
+          photo_url: userPhotoBase64 || null,
+          is_online: true,
+          last_seen: new Date().toISOString()
+        });
+      
+      if (insertError) {
+        console.error('❌ Erreur insertion:', insertError);
+      } else {
+        console.log('✅ Nouveau profil créé:', uniqueId);
+      }
+    }
+  } catch (err) {
+    console.error('❌ Erreur Supabase:', err);
+  }
+
+  if(prenom === "Steph" && password === "Steph1511") {
+    document.getElementById('choiceModal').style.display = 'flex';
+    return;
+  }
+
+  window.location.href = 'chat.html';
+};
+
+document.getElementById('creationBtn').onclick = () => { window.location.href = 'owner.html'; };
+document.getElementById('visiteBtn').onclick = () => { window.location.href = 'chat.html'; };
+document.getElementById('choiceModal').onclick = (e) => {
+  if(e.target === document.getElementById('choiceModal')) {
+    document.getElementById('choiceModal').style.display = 'none';
+  }
+};
+</script>
+
+</body>
+</html>

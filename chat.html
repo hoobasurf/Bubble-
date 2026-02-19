@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BubbleChat</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#764ba2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BubbleChat">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; position: relative; overflow-x: hidden; transition: background 0.8s ease; }
+        body.theme-zen      { background: linear-gradient(135deg,#e0f7fa,#b2ebf2,#80deea); }
+        body.theme-plage    { background: linear-gradient(135deg,#ffd89b,#f4a460,#19547b); }
+        body.theme-foret    { background: linear-gradient(135deg,#134e5e,#3a7e6f,#71b280); }
+        body.theme-futuriste{ background: linear-gradient(135deg,#667eea,#764ba2); }
+        body.theme-bonbon   { background: linear-gradient(135deg,#ffecd2,#fcb69f,#ff9a9e); }
+        body.theme-bar      { background: linear-gradient(135deg,#2c003e,#4b0082,#8b008b); }
+        body.theme-chasse   { background: linear-gradient(135deg,#3e2723,#5d4037,#795548); }
+        body.theme-aquarium { background: linear-gradient(135deg,#00416a,#1976d2 33%,#4caf50 66%,#ffe000); }
+        body.custom-bg      { background-size:cover!important; background-position:center!important; background-attachment:fixed!important; }
+        .particles { position:fixed; inset:0; pointer-events:none; z-index:0; }
+        .particle  { position:absolute; width:3px; height:3px; background:rgba(255,255,255,.5); border-radius:50%; animation:float 20s infinite ease-in-out; }
+        @keyframes float { 0%,100%{transform:translateY(0) translateX(0);opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{transform:translateY(-100vh) translateX(50px);opacity:0} }
+        .app-wrapper { position:relative; z-index:1; max-width:1500px; margin:0 auto; padding:20px; min-height:100vh; display:flex; flex-direction:column; gap:20px; }
+        .chat-header { background:rgba(255,255,255,.05); backdrop-filter:blur(10px); border-radius:20px; padding:14px 28px; border:1px solid rgba(255,255,255,.15); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+        .theme-selector { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+        .theme-label    { color:white; font-weight:600; text-shadow:0 2px 5px rgba(0,0,0,.3); }
+        .theme-options  { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+        .theme-btn { width:45px; height:45px; border-radius:50%; border:3px solid rgba(255,255,255,.5); cursor:pointer; transition:all .3s; flex-shrink:0; }
+        .theme-btn:hover  { transform:scale(1.15); border-color:white; }
+        .theme-btn.active { border-color:white; box-shadow:0 0 0 4px rgba(255,255,255,.3); }
+        .theme-btn-custom { width:45px; height:45px; border-radius:50%; border:3px solid rgba(255,255,255,.5); background:linear-gradient(135deg,#fff,#ccc); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:20px; transition:all .3s; position:relative; flex-shrink:0; }
+        .theme-btn-custom:hover { transform:scale(1.15); border-color:white; }
+        .theme-btn-custom input[type=file] { position:absolute; opacity:0; width:100%; height:100%; cursor:pointer; }
+        .user-profile-photo { width:45px; height:45px; border-radius:50%; border:3px solid rgba(255,255,255,.6); overflow:hidden; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#ff6b9d,#c06fff); font-size:20px; color:white; cursor:pointer; transition:all .3s; flex-shrink:0; vertical-align:middle; position:relative; top:0; }
+        .user-profile-photo:hover { transform:scale(1.15); }
+        .user-profile-photo img { width:100%; height:100%; object-fit:cover; }
+        .notif-toggle-btn { width:45px; height:45px; border-radius:50%; border:3px solid rgba(255,255,255,.5); background:rgba(255,255,255,.1); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:20px; transition:all .3s; flex-shrink:0; }
+        .notif-toggle-btn:hover { transform:scale(1.15); border-color:white; }
+        .notif-toggle-btn.active { border-color:#4caf50; box-shadow:0 0 0 4px rgba(76,175,80,.3); background:rgba(76,175,80,.2); }
+        .notif-toggle-btn.denied { border-color:#f44336; background:rgba(244,67,54,.2); }
+        .arcade-btn { width:45px; height:45px; border-radius:50%; border:3px solid rgba(255,215,0,.7); background:linear-gradient(135deg,rgba(255,107,157,.25),rgba(192,111,255,.25)); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:22px; transition:all .3s; flex-shrink:0; text-decoration:none; box-shadow:0 0 14px rgba(255,215,0,.35); }
+        .arcade-btn:hover { transform:scale(1.18); border-color:#ffd700; box-shadow:0 0 28px rgba(255,215,0,.7),0 0 10px rgba(255,107,157,.5); background:linear-gradient(135deg,rgba(255,107,157,.4),rgba(192,111,255,.4)); }
+        .wall-btn { width:45px; height:45px; border-radius:50%; border:3px solid rgba(30,144,255,.7); background:linear-gradient(135deg,rgba(30,144,255,.25),rgba(70,130,180,.25)); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:22px; transition:all .3s; flex-shrink:0; text-decoration:none; box-shadow:0 0 14px rgba(30,144,255,.35); }
+        .wall-btn:hover { transform:scale(1.18); border-color:#1e90ff; box-shadow:0 0 28px rgba(30,144,255,.7); }
+        .toggle-sidebar-btn { position:fixed; top:50%; left:20px; transform:translateY(-50%); z-index:300; background:linear-gradient(135deg,#ff6b9d,#c06fff); border:none; border-radius:16px; padding:16px 20px; color:white; font-weight:700; cursor:pointer; transition:all .4s cubic-bezier(.34,1.56,.64,1); display:flex; flex-direction:column; align-items:center; gap:8px; animation:neonPulse 2s ease-in-out infinite; }
+        @keyframes neonPulse { 0%,100%{ box-shadow:0 0 20px rgba(255,107,157,.6),0 0 40px rgba(192,111,255,.4),0 8px 25px rgba(0,0,0,.3); } 50%{ box-shadow:0 0 35px rgba(255,107,157,.9),0 0 65px rgba(192,111,255,.6),0 8px 25px rgba(0,0,0,.3); } }
+        .toggle-sidebar-btn:hover { transform:translateY(-50%) scale(1.1); }
+        .toggle-icon { font-size:28px; }
+        .toggle-text { font-size:12px; text-transform:uppercase; letter-spacing:1px; }
+        .body-columns { display:flex; gap:20px; flex:1; min-height:0; }
+        .users-panel { width:340px; flex-shrink:0; background:rgba(255,255,255,.05); backdrop-filter:blur(10px); border-radius:20px; border:1px solid rgba(255,255,255,.15); padding:24px 16px; display:flex; flex-direction:column; gap:16px; overflow-y:auto; max-height:calc(100vh - 160px); transition:width .4s cubic-bezier(.4,0,.2,1), min-width .4s, opacity .4s, padding .4s, border .4s; }
+        .users-panel.hidden { width:0; min-width:0; padding-left:0; padding-right:0; opacity:0; pointer-events:none; border:none; overflow:hidden; }
+        .users-panel-header { color:white; font-weight:700; font-size:20px; text-align:center; padding-bottom:16px; border-bottom:2px solid rgba(255,255,255,.15); }
+        .users-panel-count  { font-size:13px; opacity:.7; font-weight:400; margin-top:6px; }
+        .user-list { display:flex; flex-direction:column; gap:12px; }
+        .user-item { display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:18px; cursor:pointer; background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.15); transition:all .3s; position:relative; }
+        .user-item:hover  { border-color:rgba(255,107,157,.5); transform:translateX(8px); background:rgba(255,255,255,.15); }
+        .user-item.active { border-color:rgba(255,107,157,.8); background:rgba(255,107,157,.2); box-shadow:0 6px 25px rgba(255,107,157,.4); transform:translateX(8px); }
+        .user-avatar { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,#ff6b9d,#c06fff); border:3px solid rgba(255,255,255,.4); overflow:hidden; flex-shrink:0; position:relative; display:flex; align-items:center; justify-content:center; font-size:22px; color:white; font-weight:700; }
+        .user-avatar img { width:100%; height:100%; object-fit:cover; }
+        .status-dot { position:absolute; bottom:2px; right:2px; width:14px; height:14px; border-radius:50%; border:3px solid rgba(255,255,255,.9); }
+        .status-dot.online  { background:#4caf50; animation:pulse-online 2s infinite; }
+        .status-dot.offline { background:#999; }
+        @keyframes pulse-online { 0%,100%{box-shadow:0 0 12px #4caf50} 50%{box-shadow:0 0 22px #4caf50} }
+        .user-info { flex:1; min-width:0; }
+        .user-name { color:white; font-weight:700; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .user-status-txt { font-size:13px; margin-top:4px; font-weight:600; }
+        .user-status-txt.online  { color:#4caf50; }
+        .user-status-txt.offline { color:rgba(255,255,255,.5); }
+        .notif-badge { position:absolute; top:10px; right:10px; background:linear-gradient(135deg,#ff6b9d,#ff3060); color:white; font-size:12px; font-weight:900; border-radius:14px; min-width:24px; height:24px; display:flex; align-items:center; justify-content:center; padding:0 8px; animation:badgePop .5s cubic-bezier(.34,1.56,.64,1); }
+        @keyframes badgePop { from{transform:scale(0) rotate(-15deg)} to{transform:scale(1)} }
+        .right-panel { flex:1; display:flex; flex-direction:column; min-width:0; background:rgba(255,255,255,.05); backdrop-filter:blur(10px); border-radius:20px; border:1px solid rgba(255,255,255,.15); overflow:hidden; transition:flex .4s; }
+        .wizz-btn { padding:10px 20px; background:linear-gradient(135deg,#ffd700,#ff8c00); border:none; border-radius:12px; color:white; font-weight:700; cursor:pointer; transition:all .3s; font-size:14px; }
+        .wizz-btn:hover { transform:translateY(-2px); }
+        @keyframes wizz { 0%,100%{transform:translate(0,0)} 15%{transform:translate(-10px,-10px) rotate(-5deg)} 30%{transform:translate(10px,10px) rotate(5deg)} 45%{transform:translate(-8px,8px) rotate(-4deg)} 60%{transform:translate(8px,-8px) rotate(4deg)} 80%{transform:translate(-4px,4px) rotate(-2deg)} }
+        .wizzing { animation:wizz .55s ease-in-out; }
+        .chat-panel-header { background:rgba(255,255,255,.08); padding:20px 28px; border-bottom:2px solid rgba(255,255,255,.15); display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+        .chat-panel-header-avatar { width:50px; height:50px; border-radius:50%; border:3px solid rgba(255,107,157,.6); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:24px; color:white; background:linear-gradient(135deg,#ff6b9d,#c06fff); flex-shrink:0; }
+        .chat-panel-header-avatar img { width:100%; height:100%; object-fit:cover; }
+        .chat-panel-header-info { flex:1; }
+        .chat-panel-header-name   { color:white; font-weight:700; font-size:19px; }
+        .chat-panel-header-status { font-size:14px; margin-top:4px; font-weight:600; }
+        .chat-panel-header-status.online  { color:#4caf50; }
+        .chat-panel-header-status.offline { color:rgba(255,255,255,.6); }
+        .visio-btn-header { padding:10px 20px; background:linear-gradient(135deg,#ff6b9d,#c06fff); border:none; border-radius:12px; color:white; font-weight:700; cursor:pointer; transition:all .3s; font-size:14px; align-items:center; gap:6px; box-shadow:0 4px 15px rgba(192,111,255,.4); display:none; }
+        .visio-btn-header:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(192,111,255,.6); }
+        .visio-btn-header.visible { display:flex; }
+        .messages-area { flex:1; padding:28px; overflow-y:auto; display:flex; flex-direction:column; gap:14px; }
+        .message { background:rgba(255,255,255,.12); padding:16px 22px; border-radius:18px; color:white; animation:slideIn .4s ease; display:flex; gap:16px; align-items:flex-start; border:1px solid rgba(255,255,255,.1); }
+        @keyframes slideIn { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
+        .message-avatar { width:46px; height:46px; border-radius:50%; overflow:hidden; flex-shrink:0; background:linear-gradient(135deg,#ff6b9d,#c06fff); display:flex; align-items:center; justify-content:center; font-size:20px; border:3px solid rgba(255,255,255,.4); color:white; font-weight:700; }
+        .message-avatar img { width:100%; height:100%; object-fit:cover; }
+        .message-content { flex:1; }
+        .message-author { font-weight:700; margin-bottom:8px; font-size:15px; }
+        .message-text   { font-size:15px; line-height:1.6; }
+        .message-time   { font-size:12px; opacity:.7; text-align:right; margin-top:8px; }
+        .pm-msg-wrap { display:flex; flex-direction:column; margin-bottom:10px; max-width:70%; }
+        .pm-msg-wrap.sent     { align-self:flex-end;   align-items:flex-end; }
+        .pm-msg-wrap.received { align-self:flex-start; align-items:flex-start; }
+        .pm-msg { padding:14px 20px; border-radius:20px; font-size:15px; color:white; line-height:1.6; word-break:break-word; animation:msgPop .3s cubic-bezier(.34,1.56,.64,1); }
+        @keyframes msgPop { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
+        .pm-msg.sent     { border-bottom-right-radius:5px; box-shadow:0 6px 25px rgba(192,111,255,.35); }
+        .pm-msg.received { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.15); border-bottom-left-radius:5px; }
+        .pm-msg-meta { font-size:11px; opacity:.65; margin-top:6px; display:flex; align-items:center; gap:5px; }
+        .pm-tick.read { color:#64b5f6; opacity:1!important; }
+        .pm-empty { text-align:center; color:rgba(255,255,255,.5); font-size:15px; padding:80px 24px; line-height:2.2; }
+        .pm-empty-icon { font-size:56px; display:block; margin-bottom:16px; }
+        .input-area { background:rgba(255,255,255,.08); padding:20px 28px; border-top:2px solid rgba(255,255,255,.15); display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+        .message-input { flex:1; min-width:200px; padding:16px 22px; background:rgba(255,255,255,.15); border:2px solid rgba(255,255,255,.2); border-radius:18px; color:white; font-size:15px; transition:all .3s; }
+        .message-input:focus { outline:none; background:rgba(255,255,255,.25); border-color:rgba(255,255,255,.4); }
+        .message-input::placeholder { color:rgba(255,255,255,.6); }
+        .send-btn { padding:16px 36px; background:linear-gradient(135deg,#ff6b9d,#c06fff); border:none; border-radius:18px; color:white; font-size:16px; font-weight:700; cursor:pointer; transition:all .3s; box-shadow:0 6px 25px rgba(192,111,255,.5); white-space:nowrap; }
+        .send-btn:hover  { transform:translateY(-3px); }
+        .send-btn:active { transform:scale(.97); }
+        .bubble-color-row { display:flex; align-items:center; gap:12px; width:100%; margin-top:4px; flex-wrap:wrap; }
+        .bubble-color-label { color:rgba(255,255,255,.75); font-size:14px; font-weight:600; white-space:nowrap; }
+        .bubble-color-swatches { display:flex; gap:10px; flex-wrap:wrap; }
+        .color-swatch { width:30px; height:30px; border-radius:50%; border:3px solid rgba(255,255,255,.4); cursor:pointer; transition:all .25s; }
+        .color-swatch:hover  { transform:scale(1.25); border-color:white; }
+        .color-swatch.active { border-color:white; box-shadow:0 0 0 4px rgba(255,255,255,.3); transform:scale(1.2); }
+        .color-swatch-custom { width:30px; height:30px; border-radius:50%; border:3px solid rgba(255,255,255,.4); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; background:rgba(255,255,255,.1); transition:all .25s; position:relative; overflow:hidden; }
+        .color-swatch-custom:hover { transform:scale(1.25); border-color:white; }
+        .color-swatch-custom input[type=color] { position:absolute; opacity:0; width:100%; height:100%; cursor:pointer; }
+        .pm-toast { position:fixed; bottom:30px; right:30px; z-index:3000; background:rgba(10,3,24,.97); border:2px solid rgba(255,107,157,.6); border-radius:18px; padding:18px 24px; color:white; font-size:15px; box-shadow:0 15px 45px rgba(0,0,0,.7); cursor:pointer; max-width:300px; backdrop-filter:blur(25px); animation:toastIn .5s cubic-bezier(.34,1.56,.64,1); transition:opacity .4s; }
+        @keyframes toastIn { from{opacity:0;transform:translateY(20px) scale(.9)} to{opacity:1;transform:scale(1)} }
+        .pm-toast-name { font-weight:700; color:#ff6b9d; margin-bottom:6px; }
+        .pm-toast-text { opacity:.8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+```
+    /* ══ VISIO OVERLAY & CONTAINER ══ */
+    #visioOverlay { position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:9000;display:none; }
+    #visioOverlay.open { display:block; }
+    #visioOverlay.pip-mode { background:transparent;backdrop-filter:none;pointer-events:none; }
+    #visioContainer { position:fixed;z-index:9999;border-radius:20px;overflow:hidden;box-shadow:0 25px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.12);display:none;flex-direction:column;background:#0d0d1a;width:88vw;max-width:1100px;height:82vh;top:50%;left:50%;transform:translate(-50%,-50%); }
+    #visioContainer.open { display:flex; }
+    #visioContainer.pip { width:320px;height:240px;top:auto;left:auto;bottom:22px;right:22px;transform:none;border-radius:16px;cursor:move;box-shadow:0 12px 50px rgba(0,0,0,.9),0 0 0 2px rgba(255,107,157,.5); }
+    #visioContainer.fullscreen { width:100vw;height:100vh;top:0;left:0;transform:none;border-radius:0;max-width:none; }
+    #visioContainer.pip #visioRoomInfo { display:none; }
+    #visioContainer.pip .vt-btn span:last-child { display:none; }
+    #visioContainer.pip .vt-btn { padding:5px 9px;font-size:15px; }
+    #visioContainer.pip #visioTitleBar { padding:6px 10px; }
+    #visioContainer.pip #visioToolbar { padding:6px 10px;gap:6px; }
+    #visioTitleBar { display:flex;align-items:center;gap:10px;padding:11px 16px;background:linear-gradient(90deg,rgba(255,107,157,.1),rgba(192,111,255,.1));border-bottom:1px solid rgba(255,255,255,.07);user-select:none;flex-shrink:0; }
+    .vtb-icon  { font-size:18px; }
+    .vtb-title { flex:1;color:white;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .vtb-win-btns { display:flex;gap:6px; }
+    .vtb-win-btn { width:14px;height:14px;border-radius:50%;border:none;cursor:pointer;transition:opacity .2s,transform .2s;display:flex;align-items:center;justify-content:center;color:transparent;font-size:8px;font-weight:900; }
+    .vtb-win-btn:hover { opacity:.8;transform:scale(1.2);color:rgba(0,0,0,.5); }
+    .vtb-win-btn.close { background:#ff5f57; }
+    .vtb-win-btn.mini  { background:#febc2e; }
+    .vtb-win-btn.full  { background:#28c840; }
+    #visioIframeWrap { flex:1;position:relative;background:#000;overflow:hidden; }
+    #visioToolbar { display:flex;align-items:center;gap:8px;padding:9px 14px;background:rgba(0,0,0,.65);border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;flex-shrink:0; }
+    .vt-btn { display:flex;align-items:center;gap:5px;padding:7px 13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);border-radius:9px;color:white;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap; }
+    .vt-btn:hover  { background:rgba(255,255,255,.16);transform:translateY(-1px); }
+    .vt-btn.active { background:linear-gradient(135deg,rgba(255,107,157,.3),rgba(192,111,255,.3));border-color:rgba(255,107,157,.5); }
+    .vt-btn.danger { background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3); }
+    .vt-btn.danger:hover { background:rgba(239,68,68,.3); }
+    .vt-icon { font-size:16px; }
+
+    /* Indicateur statut connexion visio */
+    #visioConnStatus { font-size:11px; padding:3px 9px; border-radius:8px; font-weight:600; margin-left:auto; }
+    #visioConnStatus.connecting { background:rgba(255,193,7,.2); color:#ffc107; border:1px solid rgba(255,193,7,.4); }
+    #visioConnStatus.connected  { background:rgba(76,175,80,.2); color:#4caf50; border:1px solid rgba(76,175,80,.4); }
+    #visioConnStatus.failed     { background:rgba(244,67,54,.2); color:#f44336; border:1px solid rgba(244,67,54,.4); }
+
+    .users-panel::-webkit-scrollbar, .messages-area::-webkit-scrollbar { width:7px; }
+    .users-panel::-webkit-scrollbar-track, .messages-area::-webkit-scrollbar-track { background:rgba(255,255,255,.05); border-radius:10px; }
+    .users-panel::-webkit-scrollbar-thumb  { background:rgba(255,255,255,.2); border-radius:10px; }
+    .messages-area::-webkit-scrollbar-thumb { background:linear-gradient(135deg,#ff6b9d,#c06fff); border-radius:10px; }
+
+    @media (max-width:900px) {
+        .users-panel { width:260px; }
+        .toggle-sidebar-btn { left:10px; padding:12px 14px; }
+        .toggle-text { display:none; }
+        #visioContainer { width:96vw; height:75vh; }
+        #visioContainer.pip { width:280px; height:200px; bottom:16px; right:16px; }
+    }
+    @media (max-width:600px) {
+        .app-wrapper { padding:10px; gap:10px; }
+        .chat-header { padding:10px 14px; }
+        .theme-label { display:none; }
+        .theme-btn, .theme-btn-custom, .user-profile-photo, .notif-toggle-btn, .arcade-btn { width:36px; height:36px; font-size:16px; }
+        .toggle-sidebar-btn { left:6px; padding:10px 12px; border-radius:12px; }
+        .toggle-icon { font-size:20px; }
+        .chat-panel-header { padding:14px 16px; }
+        .messages-area { padding:16px; }
+        .input-area { padding:14px 16px; gap:10px; }
+        .message-input { min-width:0; padding:12px 16px; font-size:14px; }
+        .send-btn { padding:12px 20px; font-size:14px; }
+        .pm-msg-wrap { max-width:90%; }
+        .users-panel { position:fixed; top:0; left:0; height:100%; z-index:200; max-height:100vh; border-radius:0 20px 20px 0; width:280px; transform:translateX(0); transition:transform .4s cubic-bezier(.4,0,.2,1), opacity .4s; }
+        .users-panel.hidden { transform:translateX(-100%); width:280px; opacity:0; pointer-events:none; }
+        #visioContainer.pip { width:240px; height:180px; }
+        #visioToolbar { gap:6px; padding:8px 12px; }
+        .vt-btn { padding:7px 10px; font-size:13px; }
+        .vt-btn span { display:none; }
+    }
+</style>
+```
+
+</head>
+<body class="theme-futuriste">
+<div class="particles" id="particles"></div>
+<div class="app-wrapper">
+    <div class="chat-header">
+        <div class="theme-selector">
+            <span class="theme-label">Thème :</span>
+            <div class="theme-options">
+                <div class="theme-btn" data-theme="zen"       style="background:linear-gradient(135deg,#e0f7fa,#80deea)"  title="Zen"></div>
+                <div class="theme-btn" data-theme="plage"     style="background:linear-gradient(135deg,#ffd89b,#19547b)"  title="Plage"></div>
+                <div class="theme-btn" data-theme="foret"     style="background:linear-gradient(135deg,#134e5e,#71b280)"  title="Forêt"></div>
+                <div class="theme-btn active" data-theme="futuriste" style="background:linear-gradient(135deg,#667eea,#764ba2)" title="Futuriste"></div>
+                <div class="theme-btn" data-theme="bonbon"    style="background:linear-gradient(135deg,#ffecd2,#ff9a9e)"  title="Bonbon"></div>
+                <div class="theme-btn" data-theme="bar"       style="background:linear-gradient(135deg,#2c003e,#8b008b)"  title="Bar"></div>
+                <div class="theme-btn" data-theme="chasse"    style="background:linear-gradient(135deg,#3e2723,#795548)"  title="Chasse"></div>
+                <div class="theme-btn" data-theme="aquarium"  style="background:linear-gradient(135deg,#00416a,#ffe000)"  title="Aquarium"></div>
+                <div class="theme-btn-custom" title="Photo personnalisée">📷<input type="file" id="customBgInput" accept="image/*"></div>
+                <a href="arcade.html" class="arcade-btn" title="🕹️ Arcade — Jeux">🕹️</a>
+                <a href="wall.html"   class="wall-btn"   title="Mur">📰</a>
+                <div class="notif-toggle-btn" id="notifBtn" title="Activer les notifications">🔔</div>
+                <div class="user-profile-photo" id="userProfilePhoto" title="Mon profil">💬</div>
+            </div>
+        </div>
+    </div>
+
+```
+<button class="toggle-sidebar-btn" id="toggleSidebar">
+    <span class="toggle-icon" id="toggleIcon">👥</span>
+    <span class="toggle-text"  id="toggleText">Profils</span>
+</button>
+
+<div class="body-columns">
+    <div class="users-panel" id="usersPanel">
+        <div class="users-panel-header">
+            💬 Conversations
+            <div class="users-panel-count" id="profileCount">Chargement...</div>
+        </div>
+        <div class="user-list">
+            <div class="user-item active" id="publicChatBtn">
+                <div class="user-avatar">🌐</div>
+                <div class="user-info">
+                    <div class="user-name">Chat général</div>
+                    <div class="user-status-txt online">● Public</div>
+                </div>
+            </div>
+        </div>
+        <div class="user-list" id="profileList"></div>
+    </div>
+
+    <div class="right-panel" id="rightPanel">
+        <div class="chat-panel-header">
+            <div class="chat-panel-header-avatar" id="chatHeaderAvatar">🌐</div>
+            <div class="chat-panel-header-info">
+                <div class="chat-panel-header-name"   id="chatHeaderName">Chat général</div>
+                <div class="chat-panel-header-status online" id="chatHeaderStatus">● Public</div>
+            </div>
+            <button class="visio-btn-header visible" id="visioBtn">📹 <span>Visio</span></button>
+            <button class="wizz-btn" id="wizzBtn" style="display:none;">⚡ WIZZ!</button>
+        </div>
+        <div class="messages-area" id="messagesArea"></div>
+        <div class="input-area">
+            <input type="text" class="message-input" id="messageInput" placeholder="Tapez votre message...">
+            <button class="send-btn" id="sendBtn">Envoyer 🚀</button>
+            <div class="bubble-color-row" id="bubbleColorPicker" style="display:none;">
+                <span class="bubble-color-label">🎨 Mes bulles :</span>
+                <div class="bubble-color-swatches" id="colorSwatches"></div>
+                <div class="color-swatch-custom" title="Couleur libre">✏️<input type="color" id="customColorInput"></div>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+</div>
+
+<!-- Overlay et conteneur visio -->
+
+<div id="visioOverlay"></div>
+<div id="visioContainer">
+    <div id="visioTitleBar">
+        <span class="vtb-icon">📹</span>
+        <div style="flex:1;min-width:0;">
+            <div class="vtb-title" id="visioTitleText">Visio</div>
+            <div id="visioRoomInfo" style="font-size:12px;color:rgba(255,255,255,.4);"></div>
+        </div>
+        <span id="visioConnStatus" class="connecting">Connexion…</span>
+        <div class="vtb-win-btns">
+            <button class="vtb-win-btn close" id="visioCloseBtn" title="Fermer">✕</button>
+            <button class="vtb-win-btn mini"  id="visioPipBtn"   title="Réduire">−</button>
+            <button class="vtb-win-btn full"  id="visioFullBtn"  title="Plein écran">+</button>
+        </div>
+    </div>
+    <div id="visioIframeWrap"></div>
+    <div id="visioToolbar"></div>
+</div>
+
+<audio id="notifSound" preload="auto">
+    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2ozHTh/rt3fwpFkOTyLs+Psu5hqS0ybtO3yvKF1V1mhue7yuqJzV1qiue/yuqJ0WVmiuu/zuqJ0WVqiuu/zuqJ0WVqiuu/zuqJ0WVqiuu/zuqJ0WVqiuu/zuaF0WFuiuu/zuaF0WFuiuu/zuaF0WFuiuu/zuaF0WFuiuu/zuaF0WFuiuu/zuaF0WFuiuu/zuaF0WFuiuu/zuaF0WFuiuu8=" type="audio/wav">
+</audio>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+function logErr(label,err){
+    try{var msg=(err&&(err.message||err.details||err.hint))?(err.message||err.details||err.hint):String(err);console.log('ERR '+label+': '+msg);}catch(e){console.log('ERR '+label);}
+}
+
+const supabase=createClient(
+    'https://unqlqgjmqpjvynluanbl.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVucWxxZ2ptcXBqdnlubHVhbmJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0ODkyNjUsImV4cCI6MjA4NzA2NTI2NX0.OWLcUJhOYvNWFiftMHwz5P-BdCkuqhbA9veSXxBkJVk'
+);
+
+/* ═══════════════════════════════════
+   FINGERPRINT / IDENTITÉ
+═══════════════════════════════════ */
+function getOrCreateFingerprint(){
+    var fp=localStorage.getItem('browserFingerprint');
+    if(!fp){fp=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('browserFingerprint',fp);}
+    return fp;
+}
+var currentUserPhoto=null;
+var currentUserPrenom=localStorage.getItem('prenom')||'Invité';
+var fingerprint=getOrCreateFingerprint();
+var currentUniqueId=currentUserPrenom+'_'+fingerprint;
+var savedPhotoUrl=localStorage.getItem('userPhotoUrl')||localStorage.getItem('tempPhotoPreview');
+
+(function initPhoto(){
+    var el=document.getElementById('userProfilePhoto');
+    if(savedPhotoUrl){el.innerHTML='<img src="'+savedPhotoUrl+'" alt="Profil">';currentUserPhoto=savedPhotoUrl;}
+    else el.textContent='💬';
+})();
+
+/* ═══════════════════════════════════
+   ÉLÉMENTS DOM VISIO
+═══════════════════════════════════ */
+var elOverlay    = document.getElementById('visioOverlay');
+var elContainer  = document.getElementById('visioContainer');
+var elIframeWrap = document.getElementById('visioIframeWrap');
+var elTitleText  = document.getElementById('visioTitleText');
+var elRoomInfo   = document.getElementById('visioRoomInfo');
+var elConnStatus = document.getElementById('visioConnStatus');
+var vidLocal=null, vidRemote=null;
+
+/* ═══════════════════════════════════
+   ÉTAT VISIO
+═══════════════════════════════════ */
+var visioState={open:false,pip:false,fullscreen:false,dragging:false,dragOffX:0,dragOffY:0,roomId:null,isCaller:false,micOn:true,camOn:true};
+var pc=null, localStream=null, sigPollInt=null;
+
+/* ═══════════════════════════════════
+   SERVEURS ICE — STUN + TURN public
+   Le TURN évite les coupures sur NAT symétrique (mobile 4G/5G)
+═══════════════════════════════════ */
+var ICE_SERVERS={iceServers:[
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun1.l.google.com:19302'},
+    {urls:'stun:stun2.l.google.com:19302'},
+    {urls:'turn:openrelay.metered.ca:80',   username:'openrelayproject', credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443',  username:'openrelayproject', credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443?transport=tcp', username:'openrelayproject', credential:'openrelayproject'}
+]};
+
+/* ═══════════════════════════════════
+   CORRECTIF 1 — buildRoomId normalisé
+   On normalise les deux ID de façon identique côté appelant ET appelé
+═══════════════════════════════════ */
+function normalizeId(id){
+    return String(id||'').toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,40);
+}
+function buildRoomId(chatType,otherUniqueId){
+    if(chatType==='public') return 'public_general';
+    var ids=[normalizeId(currentUniqueId), normalizeId(otherUniqueId||'')].sort();
+    var rid='priv__'+ids[0]+'__'+ids[1];
+    console.log('[Visio] roomId=',rid);
+    return rid;
+}
+
+/* ═══════════════════════════════════
+   ÉLÉMENTS VIDÉO
+═══════════════════════════════════ */
+function buildVideoElements(){
+    elIframeWrap.innerHTML='';
+    vidRemote=document.createElement('video');
+    vidRemote.autoplay=true; vidRemote.playsInline=true;
+    vidRemote.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;';
+    vidLocal=document.createElement('video');
+    vidLocal.autoplay=true; vidLocal.playsInline=true; vidLocal.muted=true;
+    vidLocal.style.cssText='position:absolute;bottom:14px;right:14px;width:28%;max-width:200px;border-radius:12px;border:2px solid rgba(255,255,255,.3);object-fit:cover;aspect-ratio:4/3;z-index:2;background:#111;box-shadow:0 4px 20px rgba(0,0,0,.5);';
+    var waiting=document.createElement('div');
+    waiting.id='visioWaiting';
+    waiting.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:rgba(0,0,0,.7);color:white;font-size:16px;z-index:3;transition:opacity .5s;';
+    waiting.innerHTML='<div style="font-size:52px;">📹</div><div id="visioWaitingText" style="font-weight:600;">Caméra en cours...</div>';
+    elIframeWrap.appendChild(vidRemote);
+    elIframeWrap.appendChild(vidLocal);
+    elIframeWrap.appendChild(waiting);
+}
+
+/* ═══════════════════════════════════
+   BARRE D'OUTILS VISIO
+═══════════════════════════════════ */
+function buildToolbar(){
+    var tb=document.getElementById('visioToolbar');
+    tb.innerHTML=''; tb.style.display='flex';
+    var btnMic=document.createElement('button');
+    btnMic.className='vt-btn active';
+    btnMic.innerHTML='<span class="vt-icon">🎤</span><span>Micro</span>';
+    btnMic.onclick=function(){
+        visioState.micOn=!visioState.micOn;
+        if(localStream) localStream.getAudioTracks().forEach(function(t){t.enabled=visioState.micOn;});
+        btnMic.classList.toggle('active',visioState.micOn);
+        btnMic.querySelector('.vt-icon').textContent=visioState.micOn?'🎤':'🔇';
+    };
+    var btnCam=document.createElement('button');
+    btnCam.className='vt-btn active';
+    btnCam.innerHTML='<span class="vt-icon">📹</span><span>Caméra</span>';
+    btnCam.onclick=function(){
+        visioState.camOn=!visioState.camOn;
+        if(localStream) localStream.getVideoTracks().forEach(function(t){t.enabled=visioState.camOn;});
+        btnCam.classList.toggle('active',visioState.camOn);
+        btnCam.querySelector('.vt-icon').textContent=visioState.camOn?'📹':'🚫';
+    };
+    var btnPip=document.createElement('button');
+    btnPip.className='vt-btn';
+    btnPip.innerHTML='<span class="vt-icon">📌</span><span>Réduire</span>';
+    btnPip.onclick=togglePip;
+    var btnFull=document.createElement('button');
+    btnFull.className='vt-btn';
+    btnFull.innerHTML='<span class="vt-icon">⛶</span><span>Plein écran</span>';
+    btnFull.onclick=toggleFullscreen;
+    var btnHang=document.createElement('button');
+    btnHang.className='vt-btn danger';
+    btnHang.innerHTML='<span class="vt-icon">📞</span><span>Raccrocher</span>';
+    btnHang.onclick=closeVisio;
+    [btnMic,btnCam,btnPip,btnFull,btnHang].forEach(function(b){tb.appendChild(b);});
+}
+
+/* ═══════════════════════════════════
+   SIGNALISATION SUPABASE
+═══════════════════════════════════ */
+async function sendSignal(roomId,type,payload){
+    try{
+        await supabase.from('visio_signals').insert({
+            room_id:roomId, sender_id:currentUniqueId,
+            type:type, payload:JSON.stringify(payload),
+            created_at:new Date().toISOString()
+        });
+    }catch(e){logErr('sendSignal',e);}
+}
+
+var lastSigTime=null;
+
+/* ═══════════════════════════════════
+   CORRECTIF 2 — pollSignals robuste
+   On calcule d'abord maxTime, puis on traite tous les signaux
+═══════════════════════════════════ */
+async function pollSignals(roomId){
+    if(!visioState.open||visioState.roomId!==roomId) return;
+    try{
+        var q=supabase.from('visio_signals')
+            .select('*')
+            .eq('room_id',roomId)
+            .neq('sender_id',currentUniqueId)
+            .order('created_at',{ascending:true});
+        if(lastSigTime) q=q.gt('created_at',lastSigTime);
+        var res=await q;
+        if(res.error||!res.data||!res.data.length) return;
+
+        /* Mise à jour du curseur temporel AVANT traitement */
+        var maxTime=lastSigTime||'';
+        for(var i=0;i<res.data.length;i++){
+            if(res.data[i].created_at>maxTime) maxTime=res.data[i].created_at;
+        }
+        lastSigTime=maxTime;
+
+        /* Traitement séquentiel de tous les signaux */
+        for(var i=0;i<res.data.length;i++){
+            await handleSignal(res.data[i].type, JSON.parse(res.data[i].payload||'{}'));
+        }
+    }catch(e){logErr('pollSignals',e);}
+}
+
+async function handleSignal(type,payload){
+    if(!pc && type!=='offer' && type!=='invite') return;
+    if(type==='invite'){showVisioInvite(payload.fromName,payload.roomId);return;}
+    if(type==='offer'){
+        if(!pc) await setupPC(visioState.roomId,false);
+        await pc.setRemoteDescription(new RTCSessionDescription(payload));
+        var answer=await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await sendSignal(visioState.roomId,'answer',answer);
+        return;
+    }
+    if(type==='answer'){
+        if(pc.signalingState==='have-local-offer'){
+            await pc.setRemoteDescription(new RTCSessionDescription(payload));
+        }
+        return;
+    }
+    if(type==='ice'){
+        try{
+            if(pc && pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(payload));
+        }catch(e){logErr('addIceCandidate',e);}
+        return;
+    }
+    if(type==='bye'){closeVisio();return;}
+}
+
+/* ═══════════════════════════════════
+   CORRECTIF 3 — setupPC avec reconnexion
+═══════════════════════════════════ */
+async function setupPC(roomId,isCaller){
+    pc=new RTCPeerConnection(ICE_SERVERS);
+    if(localStream) localStream.getTracks().forEach(function(t){pc.addTrack(t,localStream);});
+
+    pc.ontrack=function(e){
+        if(vidRemote && e.streams && e.streams[0]){
+            vidRemote.srcObject=e.streams[0];
+            hideWaiting();
+        }
+    };
+
+    pc.onicecandidate=function(e){
+        if(e.candidate) sendSignal(roomId,'ice',e.candidate.toJSON());
+    };
+
+    pc.onicegatheringstatechange=function(){
+        console.log('[Visio] ICE gathering:',pc.iceGatheringState);
+    };
+
+    /* ═══ CORRECTIF 3 — reconnexion automatique ══ */
+    pc.onconnectionstatechange=function(){
+        if(!pc) return;
+        var state=pc.connectionState;
+        console.log('[Visio] connectionState:',state);
+        setConnStatus(state);
+        if(state==='connected'){
+            hideWaiting();
+        }
+        if(state==='disconnected'){
+            setWaitingText('Reconnexion en cours…');
+            /* Après 6s sans reconnexion, on informe l'utilisateur */
+            setTimeout(function(){
+                if(pc && pc.connectionState==='disconnected'){
+                    setWaitingText('Connexion instable — Raccrocher et réessayer');
+                }
+            },6000);
+        }
+        if(state==='failed'){
+            setWaitingText('Échec de connexion — Raccrocher et réessayer');
+        }
+        if(state==='closed'){
+            closeVisio();
+        }
+    };
+
+    pc.oniceconnectionstatechange=function(){
+        console.log('[Visio] iceConnectionState:',pc.iceConnectionState);
+        if(pc.iceConnectionState==='failed'){
+            /* Tentative de restart ICE automatique */
+            console.log('[Visio] ICE failed → restartIce()');
+            try{pc.restartIce();}catch(e){}
+        }
+    };
+
+    if(isCaller){
+        var offer=await pc.createOffer({offerToReceiveAudio:true,offerToReceiveVideo:true});
+        await pc.setLocalDescription(offer);
+        await sendSignal(roomId,'offer',offer);
+    }
+}
+
+/* ═══════════════════════════════════
+   HELPERS UI VISIO
+═══════════════════════════════════ */
+function setConnStatus(state){
+    if(!elConnStatus) return;
+    if(state==='connected'){elConnStatus.textContent='🟢 Connecté';elConnStatus.className='connected';}
+    else if(state==='failed'||state==='closed'){elConnStatus.textContent='🔴 Erreur';elConnStatus.className='failed';}
+    else{elConnStatus.textContent='🟡 Connexion…';elConnStatus.className='connecting';}
+}
+
+function hideWaiting(){
+    var w=document.getElementById('visioWaiting');
+    if(w){w.style.opacity='0';setTimeout(function(){if(w)w.style.display='none';},500);}
+}
+
+function setWaitingText(txt){
+    var el=document.getElementById('visioWaitingText');
+    if(el) el.textContent=txt;
+    var w=document.getElementById('visioWaiting');
+    if(w){w.style.display='flex';w.style.opacity='1';}
+}
+
+/* ═══════════════════════════════════
+   INVITATION VISIO
+═══════════════════════════════════ */
+function showVisioInvite(fromName,roomId){
+    var existing=document.getElementById('visioInviteToast');
+    if(existing) existing.remove();
+    var toast=document.createElement('div');
+    toast.id='visioInviteToast';
+    toast.style.cssText='position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(10,3,24,.97);border:2px solid rgba(255,107,157,.7);border-radius:18px;padding:20px 28px;color:white;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,.8);animation:toastIn .4s cubic-bezier(.34,1.56,.64,1);';
+    toast.innerHTML='<div style="font-size:28px;margin-bottom:8px;">📹</div><div style="font-weight:700;font-size:16px;margin-bottom:4px;">'+esc(fromName)+' t\'appelle</div><div style="display:flex;gap:12px;margin-top:14px;justify-content:center;"><button id="visioAcceptBtn" style="padding:10px 24px;background:linear-gradient(135deg,#43e97b,#38f9d7);border:none;border-radius:12px;color:white;font-weight:700;font-size:15px;cursor:pointer;">✅ Rejoindre</button><button id="visioDenyBtn" style="padding:10px 24px;background:rgba(239,68,68,.3);border:1px solid rgba(239,68,68,.5);border-radius:12px;color:white;font-weight:700;font-size:15px;cursor:pointer;">❌ Refuser</button></div>';
+    document.body.appendChild(toast);
+    document.getElementById('visioAcceptBtn').onclick=function(){
+        toast.remove();
+        visioState.roomId=roomId;
+        lastSigTime=null;
+        openVisioRoom(roomId,fromName,false);
+    };
+    document.getElementById('visioDenyBtn').onclick=function(){toast.remove();};
+    setTimeout(function(){if(toast.parentNode)toast.remove();},30000);
+}
+
+/* ═══════════════════════════════════
+   OUVRIR VISIO
+═══════════════════════════════════ */
+async function openVisio(chatType,otherUser){
+    var roomId=buildRoomId(chatType,otherUser?otherUser.unique_id:null);
+    var label=chatType==='public'?'Chat général':(otherUser?otherUser.prenom:'Visio');
+    lastSigTime=null;
+    if(chatType==='private'&&otherUser) await sendSignal(roomId,'invite',{fromName:currentUserPrenom,roomId:roomId});
+    openVisioRoom(roomId,label,true);
+}
+
+async function openVisioRoom(roomId,label,isCaller){
+    visioState.open=true;
+    visioState.pip=false;
+    visioState.fullscreen=false;
+    visioState.roomId=roomId;
+    visioState.isCaller=isCaller;
+    visioState.micOn=true;
+    visioState.camOn=true;
+    elOverlay.classList.add('open');
+    elContainer.classList.add('open');
+    elContainer.classList.remove('pip','fullscreen');
+    resetContainerPos();
+    elTitleText.textContent=label;
+    elRoomInfo.textContent=isCaller?'Appel en cours...':'Connexion...';
+    setConnStatus('connecting');
+    buildVideoElements();
+    buildToolbar();
+
+    try{
+        localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+        vidLocal.srcObject=localStream;
+        setWaitingText(isCaller?'En attente de l\'autre personne…':'Connexion en cours…');
+    }catch(e){
+        setWaitingText('Caméra indisponible — Vérifiez les permissions');
+        logErr('getUserMedia',e);
+        return;
+    }
+
+    await setupPC(roomId,isCaller);
+
+    /* ═══ CORRECTIF 4 — Polling rapide au démarrage puis ralenti ══ */
+    if(sigPollInt) clearInterval(sigPollInt);
+    var fastPoll=setInterval(function(){pollSignals(roomId);},600);
+    sigPollInt=fastPoll;
+    /* Après 20 secondes (phase ICE terminée), on ralentit à 2s */
+    setTimeout(function(){
+        if(sigPollInt===fastPoll){
+            clearInterval(fastPoll);
+            if(visioState.open && visioState.roomId===roomId){
+                sigPollInt=setInterval(function(){pollSignals(roomId);},2000);
+            }
+        }
+    },20000);
+
+    document.body.style.overflow='hidden';
+}
+
+/* ═══════════════════════════════════
+   FERMER VISIO
+═══════════════════════════════════ */
+function closeVisio(){
+    visioState.open=false;
+    visioState.pip=false;
+    visioState.fullscreen=false;
+    if(visioState.roomId) sendSignal(visioState.roomId,'bye',{});
+    if(sigPollInt){clearInterval(sigPollInt);sigPollInt=null;}
+    if(pc){try{pc.close();}catch(e){}pc=null;}
+    if(localStream){localStream.getTracks().forEach(function(t){t.stop();});localStream=null;}
+    elOverlay.classList.remove('open','pip-mode');
+    elContainer.classList.remove('open','pip','fullscreen');
+    elIframeWrap.innerHTML='';
+    document.getElementById('visioToolbar').innerHTML='';
+    document.body.style.overflow='';
+    resetContainerPos();
+}
+
+/* ═══════════════════════════════════
+   PIP / FULLSCREEN / DRAG
+═══════════════════════════════════ */
+function togglePip(){
+    if(!visioState.open) return;
+    visioState.pip=!visioState.pip;
+    if(visioState.pip){
+        visioState.fullscreen=false;
+        elContainer.classList.add('pip');
+        elContainer.classList.remove('fullscreen');
+        elOverlay.classList.add('pip-mode');
+        elContainer.style.transform='none';
+        elContainer.style.top='auto';
+        elContainer.style.left='auto';
+        elContainer.style.width='';
+        elContainer.style.height='';
+    }else{
+        elContainer.classList.remove('pip');
+        elOverlay.classList.remove('pip-mode');
+        resetContainerPos();
+    }
+    document.body.style.overflow=visioState.pip?'':'hidden';
+}
+
+function toggleFullscreen(){
+    if(!visioState.open) return;
+    visioState.fullscreen=!visioState.fullscreen;
+    if(visioState.fullscreen){
+        visioState.pip=false;
+        elContainer.classList.add('fullscreen');
+        elContainer.classList.remove('pip');
+        elOverlay.classList.remove('pip-mode');
+        elContainer.style.transform='none';
+        elContainer.style.top='0';
+        elContainer.style.left='0';
+        elContainer.style.width='100vw';
+        elContainer.style.height='100vh';
+        document.body.style.overflow='hidden';
+    }else{
+        elContainer.classList.remove('fullscreen');
+        resetContainerPos();
+        document.body.style.overflow='hidden';
+    }
+}
+
+function resetContainerPos(){
+    elContainer.style.bottom='';
+    elContainer.style.right='';
+    elContainer.style.top='50%';
+    elContainer.style.left='50%';
+    elContainer.style.transform='translate(-50%, -50%)';
+    elContainer.style.width='';
+    elContainer.style.height='';
+}
+
+/* Drag PIP */
+elContainer.addEventListener('mousedown',startDrag);
+elContainer.addEventListener('touchstart',startDrag,{passive:true});
+document.addEventListener('mousemove',onDrag);
+document.addEventListener('touchmove',onDrag,{passive:false});
+document.addEventListener('mouseup',stopDrag);
+document.addEventListener('touchend',stopDrag);
+
+function startDrag(e){
+    if(!visioState.pip) return;
+    if(e.target.tagName==='BUTTON'||e.target.tagName==='VIDEO'||e.target.closest('button')) return;
+    visioState.dragging=true;
+    var rect=elContainer.getBoundingClientRect();
+    var cx=e.type==='touchstart'?e.touches[0].clientX:e.clientX;
+    var cy=e.type==='touchstart'?e.touches[0].clientY:e.clientY;
+    visioState.dragOffX=cx-rect.left;
+    visioState.dragOffY=cy-rect.top;
+}
+function onDrag(e){
+    if(!visioState.dragging||!visioState.pip) return;
+    if(e.type==='touchmove') e.preventDefault();
+    var cx=e.type==='touchmove'?e.touches[0].clientX:e.clientX;
+    var cy=e.type==='touchmove'?e.touches[0].clientY:e.clientY;
+    var x=Math.max(0,Math.min(window.innerWidth -elContainer.offsetWidth, cx-visioState.dragOffX));
+    var y=Math.max(0,Math.min(window.innerHeight-elContainer.offsetHeight,cy-visioState.dragOffY));
+    elContainer.style.left=x+'px';
+    elContainer.style.top=y+'px';
+    elContainer.style.right='auto';
+    elContainer.style.bottom='auto';
+    elContainer.style.transform='none';
+}
+function stopDrag(){visioState.dragging=false;}
+
+/* Boutons titre bar */
+document.getElementById('visioBtn').addEventListener('click',function(){
+    openVisio(currentChatType,currentChatType==='private'?currentChatUser:null);
+});
+elOverlay.addEventListener('click',function(e){if(e.target===elOverlay&&!visioState.pip)closeVisio();});
+document.getElementById('visioCloseBtn').addEventListener('click',closeVisio);
+document.getElementById('visioPipBtn').addEventListener('click',togglePip);
+document.getElementById('visioFullBtn').addEventListener('click',toggleFullscreen);
+
+/* ═══════════════════════════════════
+   INVITE CHECK — écoute les appels entrants
+═══════════════════════════════════ */
+var inviteCheckInt=setInterval(async function(){
+    if(visioState.open) return;
+    try{
+        var cutoff=new Date(Date.now()-40000).toISOString();
+        var normalizedMe=normalizeId(currentUniqueId);
+        var res=await supabase.from('visio_signals')
+            .select('*')
+            .neq('sender_id',currentUniqueId)
+            .eq('type','invite')
+            .gte('created_at',cutoff)
+            .order('created_at',{ascending:false})
+            .limit(1);
+        if(!res.data||!res.data.length) return;
+        var sig=res.data[0];
+        var p=JSON.parse(sig.payload||'{}');
+        if(p.roomId && p.roomId.includes(normalizedMe)){
+            showVisioInvite(p.fromName||'Quelqu\'un',p.roomId);
+            clearInterval(inviteCheckInt);
+        }
+    }catch(e){}
+},3000);
+
+/* ESC pour fermer / quitter fullscreen */
+document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){
+        if(visioState.fullscreen) toggleFullscreen();
+        else if(visioState.open&&!visioState.pip) closeVisio();
+    }
+});
+
+/* ═══════════════════════════════════
+   NOTIFICATIONS PUSH
+═══════════════════════════════════ */
+var swRegistration=null, notifGranted=false;
+
+async function registerSW(){
+    if(!('serviceWorker' in navigator)) return;
+    try{swRegistration=await navigator.serviceWorker.register('/sw.js');updateNotifBtn();}catch(e){}
+}
+
+async function requestNotifPermission(){
+    if(!('Notification' in window)){
+        alert('Votre navigateur ne supporte pas les notifications.\nSur iPhone : installez l\'app via "Ajouter à l\'écran d\'accueil" dans Safari.');
+        return;
+    }
+    if(Notification.permission==='granted'){notifGranted=true;updateNotifBtn();return;}
+    if(Notification.permission==='denied'){alert('Notifications bloquées.\nVeuillez les autoriser dans les réglages de votre navigateur.');return;}
+    try{
+        var result=await Notification.requestPermission();
+        notifGranted=(result==='granted');
+        updateNotifBtn();
+        if(notifGranted) sendPushNotif('BubbleChat 💬','Notifications activées ! 🎉','🌐');
+    }catch(e){}
+}
+
+function updateNotifBtn(){
+    var btn=document.getElementById('notifBtn');
+    if(!btn) return;
+    var perm=('Notification' in window)?Notification.permission:'unsupported';
+    if(perm==='granted'){btn.textContent='🔔';btn.classList.add('active');btn.classList.remove('denied');btn.title='Notifications activées';notifGranted=true;}
+    else if(perm==='denied'){btn.textContent='🔕';btn.classList.add('denied');btn.classList.remove('active');btn.title='Notifications bloquées';}
+    else{btn.textContent='🔔';btn.classList.remove('active','denied');btn.title='Activer les notifications';}
+}
+
+function sendPushNotif(title,body,senderPhoto){
+    try{var a=document.getElementById('notifSound');if(a){a.currentTime=0;a.play().catch(function(){});}}catch(e){}
+    if(!document.hidden) return;
+    if(!notifGranted) return;
+    if(swRegistration&&swRegistration.active){
+        swRegistration.active.postMessage({type:'NEW_MESSAGE',title:title,body:body,icon:senderPhoto||'/icon-192.png',tag:'bubblechat-'+Date.now(),url:'/chat.html'});
+    }else{
+        try{new Notification(title,{body:body,icon:'/icon-192.png',badge:'/icon-192.png',vibrate:[200,100,200]});}catch(e){}
+    }
+}
+
+document.getElementById('notifBtn').addEventListener('click',requestNotifPermission);
+registerSW();updateNotifBtn();
+
+/* ═══════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════ */
+var sidebarVisible=true;
+var isMobile=function(){return window.innerWidth<=600;};
+
+document.getElementById('toggleSidebar').addEventListener('click',function(){
+    sidebarVisible=!sidebarVisible;
+    document.getElementById('usersPanel').classList.toggle('hidden',!sidebarVisible);
+    document.getElementById('toggleIcon').textContent=sidebarVisible?'👥':'💬';
+    document.getElementById('toggleText').textContent=sidebarVisible?'Profils':'Chat';
+});
+
+document.addEventListener('click',function(e){
+    if(isMobile()&&sidebarVisible){
+        var panel=document.getElementById('usersPanel');
+        var toggle=document.getElementById('toggleSidebar');
+        var rightPane=document.getElementById('rightPanel');
+        var header=document.querySelector('.chat-header');
+        if(!panel.contains(e.target)&&!toggle.contains(e.target)&&!rightPane.contains(e.target)&&!(header&&header.contains(e.target))){
+            sidebarVisible=false;panel.classList.add('hidden');
+            document.getElementById('toggleIcon').textContent='💬';
+            document.getElementById('toggleText').textContent='Chat';
+        }
+    }
+});
+
+/* ═══════════════════════════════════
+   ÉTAT GLOBAL CHAT
+═══════════════════════════════════ */
+var currentChatType='public', currentChatUser=null, profiles=[], pmBadges={};
+var lastPublicMsgTime=null, lastPMId=0, pmPollInterval=null, lastInboxId=0;
+
+/* ═══════════════════════════════════
+   COULEURS DE BULLES
+═══════════════════════════════════ */
+var PRESETS=[
+    {l:'Rose/Violet',v:'linear-gradient(135deg,#ff6b9d,#c06fff)'},
+    {l:'Bleu',       v:'linear-gradient(135deg,#2196f3,#03a9f4)'},
+    {l:'Vert',       v:'linear-gradient(135deg,#43e97b,#38f9d7)'},
+    {l:'Orange',     v:'linear-gradient(135deg,#f7971e,#ffd200)'},
+    {l:'Rouge',      v:'linear-gradient(135deg,#f44336,#e91e63)'},
+    {l:'Indigo',     v:'linear-gradient(135deg,#5c6bc0,#7c4dff)'},
+    {l:'Cyan',       v:'linear-gradient(135deg,#00bcd4,#26c6da)'},
+    {l:'Noir',       v:'linear-gradient(135deg,#2d2d2d,#555)'}
+];
+var myBubbleStyle=localStorage.getItem('myBubbleStyle')||PRESETS[0].v;
+
+function buildColorSwatches(){
+    var c=document.getElementById('colorSwatches');
+    c.innerHTML='';
+    PRESETS.forEach(function(p){
+        var sw=document.createElement('div');
+        sw.className='color-swatch'+(myBubbleStyle===p.v?' active':'');
+        sw.style.background=p.v; sw.title=p.l;
+        sw.addEventListener('click',function(){
+            c.querySelectorAll('.color-swatch').forEach(function(s){s.classList.remove('active');});
+            sw.classList.add('active');
+            myBubbleStyle=p.v;
+            localStorage.setItem('myBubbleStyle',p.v);
+            document.querySelectorAll('.pm-msg.sent').forEach(function(b){b.style.background=p.v;});
+        });
+        c.appendChild(sw);
+    });
+}
+buildColorSwatches();
+
+document.getElementById('customColorInput').addEventListener('input',function(e){
+    var hex=e.target.value;
+    document.querySelectorAll('.color-swatch').forEach(function(s){s.classList.remove('active');});
+    myBubbleStyle=hex;
+    localStorage.setItem('myBubbleStyle',hex);
+    document.querySelectorAll('.pm-msg.sent').forEach(function(b){b.style.background=hex;});
+});
+
+/* ═══════════════════════════════════
+   PRÉSENCE EN LIGNE
+═══════════════════════════════════ */
+async function setOnlineStatus(online){
+    try{await supabase.from('profiles').update({is_online:online,last_seen:new Date().toISOString()}).eq('unique_id',currentUniqueId);}catch(e){}
+}
+setOnlineStatus(true);
+setInterval(function(){setOnlineStatus(true);},30000);
+window.addEventListener('beforeunload',function(){setOnlineStatus(false);});
+document.addEventListener('visibilitychange',function(){setOnlineStatus(!document.hidden);});
+
+/* ═══════════════════════════════════
+   PROFILS
+═══════════════════════════════════ */
+async function loadProfiles(){
+    try{
+        var res=await supabase.from('profiles').select('unique_id, prenom, photo_url, is_online, last_seen').order('is_online',{ascending:false}).order('prenom',{ascending:true});
+        if(res.error) return;
+        profiles=(res.data||[]).filter(function(p){return p.unique_id!==currentUniqueId;}).map(function(p){
+            return{unique_id:p.unique_id||'',prenom:p.prenom||'Anonyme',photo_url:p.photo_url||null,is_online:!!p.is_online};
+        });
+        renderProfiles();
+    }catch(e){}
+}
+
+function renderProfiles(){
+    var container=document.getElementById('profileList');
+    var countEl=document.getElementById('profileCount');
+    container.innerHTML='';
+    var onlineCount=profiles.filter(function(p){return p.is_online;}).length;
+    countEl.textContent=profiles.length+' utilisateur'+(profiles.length>1?'s':'')+' · '+onlineCount+' en ligne';
+    profiles.forEach(function(profile){
+        var item=document.createElement('div');
+        item.className='user-item'+(currentChatType==='private'&&currentChatUser&&currentChatUser.unique_id===profile.unique_id?' active':'');
+        item.dataset.uid=profile.unique_id;
+        var av=document.createElement('div');av.className='user-avatar';
+        av.innerHTML=profile.photo_url?'<img src="'+profile.photo_url+'" alt="'+esc(profile.prenom)+'">':profile.prenom[0].toUpperCase();
+        var dot=document.createElement('div');dot.className='status-dot '+(profile.is_online?'online':'offline');
+        av.appendChild(dot);
+        var info=document.createElement('div');info.className='user-info';
+        info.innerHTML='<div class="user-name">'+esc(profile.prenom)+'</div><div class="user-status-txt '+(profile.is_online?'online':'offline')+'">'+(profile.is_online?'● En ligne':'● Hors ligne')+'</div>';
+        item.appendChild(av);item.appendChild(info);
+        var unread=pmBadges[profile.unique_id]||0;
+        if(unread>0){var badge=document.createElement('div');badge.className='notif-badge';badge.textContent=unread>99?'99+':unread;item.appendChild(badge);}
+        item.addEventListener('click',function(){
+            switchToPrivateChat(profile);
+            if(isMobile()){sidebarVisible=false;document.getElementById('usersPanel').classList.add('hidden');document.getElementById('toggleIcon').textContent='💬';document.getElementById('toggleText').textContent='Chat';}
+        });
+        container.appendChild(item);
+    });
+}
+setInterval(loadProfiles,5000);loadProfiles();
+
+/* ═══════════════════════════════════
+   INBOX (nouveaux MP entrants)
+═══════════════════════════════════ */
+async function pollInbox(){
+    try{
+        var res=await supabase.from('private_messages').select('id, sender_unique_id, message').eq('receiver_unique_id',currentUniqueId).eq('is_read',false).gt('id',lastInboxId).order('id',{ascending:true});
+        if(res.error||!res.data||!res.data.length) return;
+        res.data.forEach(function(msg){
+            if(msg.id>lastInboxId) lastInboxId=msg.id;
+            var sid=msg.sender_unique_id;
+            if(!(currentChatType==='private'&&currentChatUser&&currentChatUser.unique_id===sid)){
+                pmBadges[sid]=(pmBadges[sid]||0)+1;
+                renderProfiles();showToast(msg,sid);
+                var sender=profiles.find(function(p){return p.unique_id===sid;});
+                sendPushNotif('💌 '+(sender?sender.prenom:'Quelqu\'un'),msg.message==='⚡ WIZZ !'?'⚡ WIZZ !':msg.message,sender?sender.photo_url:null);
+            }
+        });
+    }catch(e){}
+}
+setInterval(pollInbox,3000);
+
+function showToast(msg,senderId){
+    var sender=profiles.find(function(p){return p.unique_id===senderId;});
+    var name=sender?sender.prenom:'Quelqu\'un';
+    var toast=document.createElement('div');toast.className='pm-toast';
+    toast.innerHTML='<div class="pm-toast-name">💌 '+esc(name)+'</div><div class="pm-toast-text">'+esc(msg.message)+'</div>';
+    toast.addEventListener('click',function(){var prof=profiles.find(function(p){return p.unique_id===senderId;});if(prof)switchToPrivateChat(prof);toast.remove();});
+    document.body.appendChild(toast);
+    setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove();},400);},5000);
+}
+
+/* ═══════════════════════════════════
+   WIZZ
+═══════════════════════════════════ */
+document.getElementById('wizzBtn').addEventListener('click',async function(){
+    if(!currentChatUser) return;
+    document.getElementById('rightPanel').classList.add('wizzing');
+    setTimeout(function(){document.getElementById('rightPanel').classList.remove('wizzing');},600);
+    try{await supabase.from('private_messages').insert({sender_unique_id:currentUniqueId,receiver_unique_id:currentChatUser.unique_id,message:'⚡ WIZZ !',is_read:false});}catch(e){}
+});
+
+/* ═══════════════════════════════════
+   MESSAGES PUBLICS
+═══════════════════════════════════ */
+async function loadPublicMessages(){
+    try{
+        var query=supabase.from('messages').select('id, prenom, message, created_at, photo_url').is('to_user',null).order('created_at',{ascending:true}).limit(60);
+        if(lastPublicMsgTime) query=query.gt('created_at',lastPublicMsgTime);
+        var res=await query;
+        if(res.error||!res.data||!res.data.length) return;
+        var isFirst=!lastPublicMsgTime;
+        if(isFirst) document.getElementById('messagesArea').innerHTML='';
+        res.data.forEach(function(msg){
+            if(!lastPublicMsgTime||msg.created_at>lastPublicMsgTime) lastPublicMsgTime=msg.created_at;
+            if(currentChatType==='public'){
+                var isNew=!isFirst&&msg.prenom!==currentUserPrenom;
+                renderPublicMessage({author:msg.prenom||'Anonyme',text:msg.message,photo:msg.photo_url,time:fmtTime(msg.created_at)});
+                if(isNew) sendPushNotif('🌐 '+(msg.prenom||'Anonyme'),msg.message,msg.photo_url||'/icon-192.png');
+            }
+        });
+    }catch(e){}
+}
+
+function renderPublicMessage(opts){
+    var area=document.getElementById('messagesArea');
+    var el=document.createElement('div');el.className='message';
+    var av=document.createElement('div');av.className='message-avatar';
+    av.innerHTML=opts.photo?'<img src="'+opts.photo+'" alt="'+esc(opts.author)+'">':(opts.author?opts.author[0]:'?').toUpperCase();
+    var content=document.createElement('div');content.className='message-content';
+    content.innerHTML='<div class="message-author">'+esc(opts.author)+'</div><div class="message-text">'+esc(opts.text)+'</div><div class="message-time">'+opts.time+'</div>';
+    el.appendChild(av);el.appendChild(content);area.appendChild(el);area.scrollTop=area.scrollHeight;
+}
+
+async function sendPublicMessage(text){
+    renderPublicMessage({author:currentUserPrenom,text:text,photo:currentUserPhoto,time:fmtTime(new Date().toISOString())});
+    try{
+        var res=await supabase.from('messages').insert({prenom:currentUserPrenom,message:text,photo_url:currentUserPhoto||null,to_user:null}).select('created_at').single();
+        if(!res.error&&res.data&&res.data.created_at&&(!lastPublicMsgTime||res.data.created_at>lastPublicMsgTime)) lastPublicMsgTime=res.data.created_at;
+    }catch(e){}
+}
+setInterval(loadPublicMessages,2500);
+
+/* ═══════════════════════════════════
+   NAVIGATION ENTRE CHATS
+═══════════════════════════════════ */
+function setHeader(avatarHtml,name,statusTxt,isOnline,showWizz){
+    document.getElementById('chatHeaderAvatar').innerHTML=avatarHtml;
+    document.getElementById('chatHeaderName').textContent=name;
+    var st=document.getElementById('chatHeaderStatus');
+    st.className='chat-panel-header-status '+(isOnline?'online':'offline');
+    st.textContent=statusTxt;
+    document.getElementById('wizzBtn').style.display=showWizz?'block':'none';
+}
+
+function switchToPublicChat(){
+    if(pmPollInterval){clearInterval(pmPollInterval);pmPollInterval=null;}
+    currentChatType='public';currentChatUser=null;lastPublicMsgTime=null;
+    setHeader('🌐','Chat général','● Public',true,false);
+    document.getElementById('bubbleColorPicker').style.display='none';
+    document.querySelectorAll('.user-item').forEach(function(i){i.classList.remove('active');});
+    document.getElementById('publicChatBtn').classList.add('active');
+    document.getElementById('messagesArea').innerHTML='';
+    loadPublicMessages();
+}
+
+function switchToPrivateChat(profile){
+    if(pmPollInterval){clearInterval(pmPollInterval);pmPollInterval=null;}
+    currentChatType='private';currentChatUser=profile;lastPMId=0;
+    pmBadges[profile.unique_id]=0;
+    var avHtml=profile.photo_url?'<img src="'+profile.photo_url+'" alt="'+esc(profile.prenom)+'">':profile.prenom[0].toUpperCase();
+    setHeader(avHtml,profile.prenom,profile.is_online?'🟢 En ligne':'🔴 Hors ligne',profile.is_online,true);
+    document.getElementById('bubbleColorPicker').style.display='flex';
+    document.querySelectorAll('.user-item').forEach(function(i){i.classList.remove('active');});
+    document.querySelectorAll('.user-item[data-uid="'+profile.unique_id+'"]').forEach(function(i){i.classList.add('active');});
+    document.getElementById('publicChatBtn').classList.remove('active');
+    loadPMHistory(profile.unique_id);
+    markAllRead(profile.unique_id);
+    document.querySelectorAll('.notif-badge').forEach(function(b){
+        var item=b.closest('.user-item');
+        if(item&&item.dataset.uid===profile.unique_id) b.remove();
+    });
+    pmPollInterval=setInterval(function(){pollNewPMs(profile.unique_id);},2500);
+}
+
+document.getElementById('publicChatBtn').addEventListener('click',function(){
+    switchToPublicChat();
+    if(isMobile()){sidebarVisible=false;document.getElementById('usersPanel').classList.add('hidden');document.getElementById('toggleIcon').textContent='💬';document.getElementById('toggleText').textContent='Chat';}
+});
+
+/* ═══════════════════════════════════
+   MESSAGES PRIVÉS
+═══════════════════════════════════ */
+async function loadPMHistory(otherId){
+    var area=document.getElementById('messagesArea');
+    area.innerHTML='<div class="pm-empty"><span class="pm-empty-icon">💬</span>Chargement...</div>';
+    try{
+        var res=await supabase.from('private_messages').select('id, sender_unique_id, message, created_at, is_read')
+            .or('and(sender_unique_id.eq.'+currentUniqueId+',receiver_unique_id.eq.'+otherId+'),and(sender_unique_id.eq.'+otherId+',receiver_unique_id.eq.'+currentUniqueId+')')
+            .order('created_at',{ascending:true}).limit(150);
+        if(res.error){area.innerHTML='<div class="pm-empty"><span class="pm-empty-icon">⚠️</span>Erreur chargement</div>';return;}
+        area.innerHTML='';
+        if(!res.data||!res.data.length){area.innerHTML='<div class="pm-empty"><span class="pm-empty-icon">💌</span>Aucun message</div>';return;}
+        res.data.forEach(function(msg){
+            if(msg.id>lastPMId) lastPMId=msg.id;
+            appendPMBubble({id:msg.id,text:msg.message,fromMe:msg.sender_unique_id===currentUniqueId,time:fmtTime(msg.created_at),is_read:msg.is_read});
+        });
+        area.scrollTop=area.scrollHeight;
+    }catch(e){}
+}
+
+function appendPMBubble(msg){
+    var area=document.getElementById('messagesArea');
+    var empty=area.querySelector('.pm-empty');if(empty)empty.remove();
+    var wrap=document.createElement('div');wrap.className='pm-msg-wrap '+(msg.fromMe?'sent':'received');wrap.dataset.msgId=msg.id;
+    var bubble=document.createElement('div');bubble.className='pm-msg '+(msg.fromMe?'sent':'received');
+    if(msg.fromMe) bubble.style.background=myBubbleStyle;
+    var tick=msg.fromMe?'<span class="pm-tick '+(msg.is_read?'read':'')+'">'+(msg.is_read?'✓✓':'✓')+'</span>':'';
+    bubble.innerHTML=esc(msg.text)+'<div class="pm-msg-meta">'+msg.time+' '+tick+'</div>';
+    wrap.appendChild(bubble);area.appendChild(wrap);area.scrollTop=area.scrollHeight;
+}
+
+async function sendPM(){
+    if(!currentChatUser) return;
+    var input=document.getElementById('messageInput');
+    var text=input.value.trim();if(!text) return;input.value='';
+    var tempId='tmp-'+Date.now();
+    appendPMBubble({id:tempId,text:text,fromMe:true,time:fmtTime(new Date().toISOString()),is_read:false});
+    try{
+        var res=await supabase.from('private_messages').insert({sender_unique_id:currentUniqueId,receiver_unique_id:currentChatUser.unique_id,message:text,is_read:false}).select('id').single();
+        if(res.error){var el2=document.querySelector('[data-msg-id="'+tempId+'"]');if(el2)el2.remove();input.value=text;return;}
+        var el=document.querySelector('[data-msg-id="'+tempId+'"]');
+        if(el&&res.data){el.dataset.msgId=res.data.id;if(res.data.id>lastPMId)lastPMId=res.data.id;}
+    }catch(e){}
+}
+
+async function pollNewPMs(otherId){
+    if(currentChatType!=='private'||!currentChatUser||currentChatUser.unique_id!==otherId) return;
+    try{
+        var res=await supabase.from('private_messages').select('id, message, created_at, is_read')
+            .eq('sender_unique_id',otherId).eq('receiver_unique_id',currentUniqueId).gt('id',lastPMId).order('id',{ascending:true});
+        if(res.error||!res.data||!res.data.length) return;
+        res.data.forEach(function(msg){
+            if(msg.id>lastPMId) lastPMId=msg.id;
+            appendPMBubble({id:msg.id,text:msg.message,fromMe:false,time:fmtTime(msg.created_at),is_read:false});
+            markRead(msg.id);
+        });
+        if(res.data.some(function(m){return m.message==='⚡ WIZZ !';})){
+            document.getElementById('rightPanel').classList.add('wizzing');
+            setTimeout(function(){document.getElementById('rightPanel').classList.remove('wizzing');},600);
+        }
+    }catch(e){}
+}
+
+async function markRead(id){try{await supabase.from('private_messages').update({is_read:true}).eq('id',id);}catch(e){}}
+async function markAllRead(senderId){try{await supabase.from('private_messages').update({is_read:true}).eq('receiver_unique_id',currentUniqueId).eq('sender_unique_id',senderId).eq('is_read',false);}catch(e){}}
+
+/* ═══════════════════════════════════
+   ENVOI DE MESSAGE
+═══════════════════════════════════ */
+function sendMessage(){
+    var input=document.getElementById('messageInput');
+    var text=input.value.trim();if(!text) return;
+    if(currentChatType==='public'){sendPublicMessage(text);input.value='';}
+    else sendPM();
+}
+document.getElementById('sendBtn').addEventListener('click',sendMessage);
+document.getElementById('messageInput').addEventListener('keypress',function(e){if(e.key==='Enter')sendMessage();});
+
+/* ═══════════════════════════════════
+   THÈMES
+═══════════════════════════════════ */
+document.querySelectorAll('.theme-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+        document.body.className='';document.body.style.backgroundImage='';
+        document.querySelectorAll('.theme-btn').forEach(function(b){b.classList.remove('active');});
+        btn.classList.add('active');
+        document.body.classList.add('theme-'+btn.dataset.theme);
+    });
+});
+document.getElementById('customBgInput').addEventListener('change',function(e){
+    var file=e.target.files[0];if(!file) return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+        document.body.className='custom-bg';
+        document.body.style.backgroundImage='url('+ev.target.result+')';
+        document.querySelectorAll('.theme-btn').forEach(function(b){b.classList.remove('active');});
+    };
+    reader.readAsDataURL(file);
+});
+
+/* ═══════════════════════════════════
+   PARTICULES
+═══════════════════════════════════ */
+(function(){
+    var c=document.getElementById('particles');
+    for(var i=0;i<40;i++){
+        var p=document.createElement('div');p.className='particle';
+        p.style.left=(Math.random()*100)+'%';
+        p.style.animationDelay=(Math.random()*20)+'s';
+        p.style.animationDuration=(Math.random()*15+15)+'s';
+        c.appendChild(p);
+    }
+})();
+
+/* ═══════════════════════════════════
+   UTILITAIRES
+═══════════════════════════════════ */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtTime(iso){
+    if(!iso) return '';
+    var d=new Date(iso),now=new Date();
+    var hm=d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    return d.toDateString()===now.toDateString()?hm:d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})+' '+hm;
+}
+
+/* ═══════════════════════════════════
+   INIT
+═══════════════════════════════════ */
+switchToPublicChat();
+</script>
+
+</body>
+</html>
