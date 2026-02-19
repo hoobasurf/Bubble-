@@ -237,7 +237,7 @@
 </button>
 
 <div class="body-columns">
-    <div class="users-panel" id="usersPanel">
+    <div class="users-panel hidden" id="usersPanel">
         <div class="users-panel-header">
             💬 Conversations
             <div class="users-panel-count" id="profileCount">Chargement...</div>
@@ -882,7 +882,7 @@ registerSW();updateNotifBtn();
 
 var isMobile=function(){return window.innerWidth<=600;};
 var sidebarVisible=!isMobile();
-if(isMobile()){document.getElementById('usersPanel').classList.add('hidden');}
+if(!isMobile()){document.getElementById('usersPanel').classList.remove('hidden');}
 
 
 document.getElementById('toggleSidebar').addEventListener('click',function(){
