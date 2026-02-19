@@ -183,7 +183,7 @@
     #visioContainer.pip { width:280px; height:200px; bottom:16px; right:16px; }
 }
 @media (max-width:600px) {
-    .app-wrapper { padding:0; gap:0; }
+    .app-wrapper { padding:10px; gap:10px; }
     .chat-header { padding:10px 14px; }
     .theme-label { display:none; }
     .theme-btn, .theme-btn-custom, .user-profile-photo, .notif-toggle-btn, .arcade-btn { width:36px; height:36px; font-size:16px; }
@@ -237,7 +237,7 @@
 </button>
 
 <div class="body-columns">
-    <div class="users-panel hidden" id="usersPanel">
+    <div class="users-panel" id="usersPanel">
         <div class="users-panel-header">
             💬 Conversations
             <div class="users-panel-count" id="profileCount">Chargement...</div>
@@ -879,11 +879,8 @@ registerSW();updateNotifBtn();
 /* ═══════════════════════════════════
    SIDEBAR
 ═══════════════════════════════════ */
-
+var sidebarVisible=true;
 var isMobile=function(){return window.innerWidth<=600;};
-var sidebarVisible=!isMobile();
-if(!isMobile()){document.getElementById('usersPanel').classList.remove('hidden');}
-
 
 document.getElementById('toggleSidebar').addEventListener('click',function(){
     sidebarVisible=!sidebarVisible;
