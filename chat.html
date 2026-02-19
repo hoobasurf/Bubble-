@@ -26,7 +26,7 @@
         .particles { position:fixed; inset:0; pointer-events:none; z-index:0; }
         .particle  { position:absolute; width:3px; height:3px; background:rgba(255,255,255,.5); border-radius:50%; animation:float 20s infinite ease-in-out; }
         @keyframes float { 0%,100%{transform:translateY(0) translateX(0);opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{transform:translateY(-100vh) translateX(50px);opacity:0} }
-        .app-wrapper { position:relative; z-index:1; width:100%; padding:20px; min-height:100vh; display:flex; flex-direction:column; gap:20px; }
+        .app-wrapper { position:relative; z-index:1; max-width:1500px; margin:0 auto; padding:20px; min-height:100vh; display:flex; flex-direction:column; gap:20px; }
         .chat-header { background:rgba(255,255,255,.05); backdrop-filter:blur(10px); border-radius:20px; padding:14px 28px; border:1px solid rgba(255,255,255,.15); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
         .theme-selector { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
         .theme-label    { color:white; font-weight:600; text-shadow:0 2px 5px rgba(0,0,0,.3); }
@@ -127,18 +127,6 @@
         .color-swatch-custom { width:30px; height:30px; border-radius:50%; border:3px solid rgba(255,255,255,.4); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; background:rgba(255,255,255,.1); transition:all .25s; position:relative; overflow:hidden; }
         .color-swatch-custom:hover { transform:scale(1.25); border-color:white; }
         .color-swatch-custom input[type=color] { position:absolute; opacity:0; width:100%; height:100%; cursor:pointer; }
-        .attach-btn { width:46px; height:46px; border-radius:50%; border:2px solid rgba(255,107,157,.6); background:linear-gradient(135deg,rgba(255,107,157,.15),rgba(192,111,255,.15)); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .3s; flex-shrink:0; }
-        .attach-btn:hover { transform:scale(1.15); border-color:rgba(255,107,157,1); background:linear-gradient(135deg,rgba(255,107,157,.35),rgba(192,111,255,.35)); box-shadow:0 0 18px rgba(255,107,157,.5); }
-        .attach-preview { display:none; align-items:center; gap:10px; width:100%; background:rgba(255,255,255,.08); border-radius:14px; padding:10px 14px; border:1px solid rgba(255,255,255,.15); }
-        .attach-preview.visible { display:flex; }
-        .attach-preview-img { max-height:60px; max-width:100px; border-radius:10px; object-fit:cover; border:2px solid rgba(255,107,157,.5); }
-        .attach-preview-name { color:rgba(255,255,255,.85); font-size:13px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .attach-preview-remove { background:rgba(255,60,60,.3); border:none; border-radius:50%; width:24px; height:24px; color:white; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-        .attach-preview-remove:hover { background:rgba(255,60,60,.6); }
-        .msg-image { max-width:100%; max-height:260px; border-radius:14px; margin-top:10px; display:block; cursor:pointer; border:2px solid rgba(255,255,255,.15); transition:transform .2s; }
-        .msg-image:hover { transform:scale(1.02); }
-        .msg-file-link { display:inline-flex; align-items:center; gap:8px; margin-top:10px; padding:10px 16px; background:rgba(255,255,255,.12); border-radius:12px; color:white; text-decoration:none; font-size:14px; border:1px solid rgba(255,255,255,.2); transition:all .2s; }
-        .msg-file-link:hover { background:rgba(255,107,157,.25); border-color:rgba(255,107,157,.5); }
         .pm-toast { position:fixed; bottom:30px; right:30px; z-index:3000; background:rgba(10,3,24,.97); border:2px solid rgba(255,107,157,.6); border-radius:18px; padding:18px 24px; color:white; font-size:15px; box-shadow:0 15px 45px rgba(0,0,0,.7); cursor:pointer; max-width:300px; backdrop-filter:blur(25px); animation:toastIn .5s cubic-bezier(.34,1.56,.64,1); transition:opacity .4s; }
         @keyframes toastIn { from{opacity:0;transform:translateY(20px) scale(.9)} to{opacity:1;transform:scale(1)} }
         .pm-toast-name { font-weight:700; color:#ff6b9d; margin-bottom:6px; }
@@ -195,9 +183,7 @@
     #visioContainer.pip { width:280px; height:200px; bottom:16px; right:16px; }
 }
 @media (max-width:600px) {
-    .app-wrapper { padding:0; gap:0; }
-    .chat-header { margin:8px 8px 0 8px; border-radius:16px; }
-    .body-columns { margin:8px; }
+    .app-wrapper { padding:10px; gap:10px; }
     .chat-header { padding:10px 14px; }
     .theme-label { display:none; }
     .theme-btn, .theme-btn-custom, .user-profile-photo, .notif-toggle-btn, .arcade-btn { width:36px; height:36px; font-size:16px; }
@@ -281,20 +267,8 @@
     </div>
     <div class="messages-area" id="messagesArea"></div>
     <div class="input-area">
-        <input type="file" id="attachFileInput" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;position:static">
-        <label for="attachFileInput" class="attach-btn" title="Photo ou fichier">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <defs><linearGradient id="ag" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff6b9d"/><stop offset="100%" stop-color="#c06fff"/></linearGradient></defs>
-                <path stroke="url(#ag)" d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
-            </svg>
-        </label>
         <input type="text" class="message-input" id="messageInput" placeholder="Tapez votre message...">
         <button class="send-btn" id="sendBtn">Envoyer 🚀</button>
-        <div class="attach-preview" id="attachPreview">
-            <img class="attach-preview-img" id="attachPreviewImg" src="" alt="" style="display:none">
-            <span class="attach-preview-name" id="attachPreviewName"></span>
-            <button class="attach-preview-remove" id="attachPreviewRemove">✕</button>
-        </div>
         <div class="bubble-color-row" id="bubbleColorPicker" style="display:none;">
             <span class="bubble-color-label">🎨 Mes bulles :</span>
             <div class="bubble-color-swatches" id="colorSwatches"></div>
@@ -905,8 +879,11 @@ registerSW();updateNotifBtn();
 /* ═══════════════════════════════════
    SIDEBAR
 ═══════════════════════════════════ */
-var sidebarVisible=true;
+
 var isMobile=function(){return window.innerWidth<=600;};
+var sidebarVisible=!isMobile();
+if(isMobile()){document.getElementById('usersPanel').classList.add('hidden');}
+
 
 document.getElementById('toggleSidebar').addEventListener('click',function(){
     sidebarVisible=!sidebarVisible;
@@ -1086,8 +1063,7 @@ async function loadPublicMessages(){
             if(!lastPublicMsgTime||msg.created_at>lastPublicMsgTime) lastPublicMsgTime=msg.created_at;
             if(currentChatType==='public'){
                 var isNew=!isFirst&&msg.prenom!==currentUserPrenom;
-                var p1=parseMsg(msg.message);
-                renderPublicMessage({author:msg.prenom||'Anonyme',text:p1.text,photo:msg.photo_url,time:fmtTime(msg.created_at),attachUrl:p1.attachUrl,attachType:p1.attachType,attachName:p1.attachName});
+                renderPublicMessage({author:msg.prenom||'Anonyme',text:msg.message,photo:msg.photo_url,time:fmtTime(msg.created_at)});
                 if(isNew) sendPushNotif('🌐 '+(msg.prenom||'Anonyme'),msg.message,msg.photo_url||'/icon-192.png');
             }
         });
@@ -1100,20 +1076,14 @@ function renderPublicMessage(opts){
     var av=document.createElement('div');av.className='message-avatar';
     av.innerHTML=opts.photo?'<img src="'+opts.photo+'" alt="'+esc(opts.author)+'">':(opts.author?opts.author[0]:'?').toUpperCase();
     var content=document.createElement('div');content.className='message-content';
-    var mediaHtml='';
-    if(opts.attachUrl){
-        if(opts.attachType==='image')mediaHtml='<img class="msg-image" src="'+opts.attachUrl+'" onclick="window.open(this.src)">';
-        else mediaHtml='<a class="msg-file-link" href="'+opts.attachUrl+'" target="_blank">📎 '+esc(opts.attachName||'Fichier')+'</a>';
-    }
-    content.innerHTML='<div class="message-author">'+esc(opts.author)+'</div><div class="message-text">'+esc(opts.text)+'</div>'+mediaHtml+'<div class="message-time">'+opts.time+'</div>';
+    content.innerHTML='<div class="message-author">'+esc(opts.author)+'</div><div class="message-text">'+esc(opts.text)+'</div><div class="message-time">'+opts.time+'</div>';
     el.appendChild(av);el.appendChild(content);area.appendChild(el);area.scrollTop=area.scrollHeight;
 }
 
-async function sendPublicMessage(text,attachUrl,attachType,attachName){
-    var msgToSave=attachUrl?text+'||ATTACH||'+attachType+'||'+attachName+'||'+attachUrl:text;
-    renderPublicMessage({author:currentUserPrenom,text:text,photo:currentUserPhoto,time:fmtTime(new Date().toISOString()),attachUrl:attachUrl,attachType:attachType,attachName:attachName});
+async function sendPublicMessage(text){
+    renderPublicMessage({author:currentUserPrenom,text:text,photo:currentUserPhoto,time:fmtTime(new Date().toISOString())});
     try{
-        var res=await supabase.from('messages').insert({prenom:currentUserPrenom,message:msgToSave,photo_url:currentUserPhoto||null,to_user:null}).select('created_at').single();
+        var res=await supabase.from('messages').insert({prenom:currentUserPrenom,message:text,photo_url:currentUserPhoto||null,to_user:null}).select('created_at').single();
         if(!res.error&&res.data&&res.data.created_at&&(!lastPublicMsgTime||res.data.created_at>lastPublicMsgTime)) lastPublicMsgTime=res.data.created_at;
     }catch(e){}
 }
@@ -1181,8 +1151,7 @@ async function loadPMHistory(otherId){
         if(!res.data||!res.data.length){area.innerHTML='<div class="pm-empty"><span class="pm-empty-icon">💌</span>Aucun message</div>';return;}
         res.data.forEach(function(msg){
             if(msg.id>lastPMId) lastPMId=msg.id;
-            var p3=parseMsg(msg.message);
-            appendPMBubble({id:msg.id,text:p3.text,fromMe:msg.sender_unique_id===currentUniqueId,time:fmtTime(msg.created_at),is_read:msg.is_read,attachUrl:p3.attachUrl,attachType:p3.attachType,attachName:p3.attachName});
+            appendPMBubble({id:msg.id,text:msg.message,fromMe:msg.sender_unique_id===currentUniqueId,time:fmtTime(msg.created_at),is_read:msg.is_read});
         });
         area.scrollTop=area.scrollHeight;
     }catch(e){}
@@ -1195,24 +1164,19 @@ function appendPMBubble(msg){
     var bubble=document.createElement('div');bubble.className='pm-msg '+(msg.fromMe?'sent':'received');
     if(msg.fromMe) bubble.style.background=myBubbleStyle;
     var tick=msg.fromMe?'<span class="pm-tick '+(msg.is_read?'read':'')+'">'+(msg.is_read?'✓✓':'✓')+'</span>':'';
-    var mh2='';
-    if(msg.attachUrl){
-        if(msg.attachType==='image')mh2='<img class="msg-image" src="'+msg.attachUrl+'" onclick="window.open(this.src)">';
-        else mh2='<a class="msg-file-link" href="'+msg.attachUrl+'" target="_blank">📎 '+esc(msg.attachName||'Fichier')+'</a>';
-    }
-    bubble.innerHTML=esc(msg.text)+mh2+'<div class="pm-msg-meta">'+msg.time+' '+tick+'</div>';
+    bubble.innerHTML=esc(msg.text)+'<div class="pm-msg-meta">'+msg.time+' '+tick+'</div>';
     wrap.appendChild(bubble);area.appendChild(wrap);area.scrollTop=area.scrollHeight;
 }
 
-async function sendPM(textOverride,attachUrl,attachType,attachName){
-    if(!currentChatUser)return;
-    var text=textOverride||'';
+async function sendPM(){
+    if(!currentChatUser) return;
+    var input=document.getElementById('messageInput');
+    var text=input.value.trim();if(!text) return;input.value='';
     var tempId='tmp-'+Date.now();
-    var msgToSave=attachUrl?text+'||ATTACH||'+attachType+'||'+attachName+'||'+attachUrl:text;
-    appendPMBubble({id:tempId,text:text,fromMe:true,time:fmtTime(new Date().toISOString()),is_read:false,attachUrl:attachUrl,attachType:attachType,attachName:attachName});
+    appendPMBubble({id:tempId,text:text,fromMe:true,time:fmtTime(new Date().toISOString()),is_read:false});
     try{
-        var res=await supabase.from('private_messages').insert({sender_unique_id:currentUniqueId,receiver_unique_id:currentChatUser.unique_id,message:msgToSave,is_read:false}).select('id').single();
-        if(res.error){var el2=document.querySelector('[data-msg-id="'+tempId+'"]');if(el2)el2.remove();return;}
+        var res=await supabase.from('private_messages').insert({sender_unique_id:currentUniqueId,receiver_unique_id:currentChatUser.unique_id,message:text,is_read:false}).select('id').single();
+        if(res.error){var el2=document.querySelector('[data-msg-id="'+tempId+'"]');if(el2)el2.remove();input.value=text;return;}
         var el=document.querySelector('[data-msg-id="'+tempId+'"]');
         if(el&&res.data){el.dataset.msgId=res.data.id;if(res.data.id>lastPMId)lastPMId=res.data.id;}
     }catch(e){}
@@ -1226,8 +1190,7 @@ async function pollNewPMs(otherId){
         if(res.error||!res.data||!res.data.length) return;
         res.data.forEach(function(msg){
             if(msg.id>lastPMId) lastPMId=msg.id;
-            var p2=parseMsg(msg.message);
-            appendPMBubble({id:msg.id,text:p2.text,fromMe:false,time:fmtTime(msg.created_at),is_read:false,attachUrl:p2.attachUrl,attachType:p2.attachType,attachName:p2.attachName});
+            appendPMBubble({id:msg.id,text:msg.message,fromMe:false,time:fmtTime(msg.created_at),is_read:false});
             markRead(msg.id);
         });
         if(res.data.some(function(m){return m.message==='⚡ WIZZ !';})){
@@ -1243,74 +1206,11 @@ async function markAllRead(senderId){try{await supabase.from('private_messages')
 /* ═══════════════════════════════════
    ENVOI DE MESSAGE
 ═══════════════════════════════════ */
-/* PIÈCES JOINTES */
-var pendingAttach=null;
-const IMGBB_KEY='dbd9cc12a3d83f29974db5059ac4c08c';
-
-async function uploadToImgBB(file){
-    var fd=new FormData();fd.append('image',file);
-    var res=await fetch('https://api.imgbb.com/1/upload?key='+IMGBB_KEY,{method:'POST',body:fd});
-    var json=await res.json();
-    return json.success?json.data.url:null;
-}
-
-function showAttachPreview(file,type){
-    pendingAttach={file:file,type:type,name:file.name};
-    var preview=document.getElementById('attachPreview');
-    var previewImg=document.getElementById('attachPreviewImg');
-    var previewName=document.getElementById('attachPreviewName');
-    preview.classList.add('visible');
-    if(type==='image'){
-        var reader=new FileReader();
-        reader.onload=function(e){previewImg.src=e.target.result;previewImg.style.display='block';};
-        reader.readAsDataURL(file);
-        previewName.textContent=file.name;
-    } else {
-        previewImg.style.display='none';
-        previewName.textContent='📎 '+file.name;
-    }
-}
-
-function clearAttach(){
-    pendingAttach=null;
-    document.getElementById('attachPreview').classList.remove('visible');
-    document.getElementById('attachPreviewImg').src='';
-    document.getElementById('attachPreviewImg').style.display='none';
-    document.getElementById('attachPreviewName').textContent='';
-    document.getElementById('attachFileInput').value='';
-}
-
-document.getElementById('attachFileInput').addEventListener('change',function(e){
-    var file=e.target.files[0];if(!file)return;
-    showAttachPreview(file,file.type.startsWith('image/')?'image':'file');
-});
-document.getElementById('attachPreviewRemove').addEventListener('click',clearAttach);
-
-function parseMsg(raw){
-    if(!raw)return{text:'',attachUrl:null,attachType:null,attachName:null};
-    var parts=raw.split('||ATTACH||');
-    if(parts.length===4)return{text:parts[0],attachType:parts[1],attachName:parts[2],attachUrl:parts[3]};
-    return{text:raw,attachUrl:null,attachType:null,attachName:null};
-}
-
-async function sendMessage(){
+function sendMessage(){
     var input=document.getElementById('messageInput');
-    var text=input.value.trim();
-    if(!text&&!pendingAttach)return;
-    var attach=pendingAttach;
-    input.value='';clearAttach();
-    var attachUrl=null,attachType=null,attachName=null;
-    if(attach){
-        attachType=attach.type;attachName=attach.name;
-        document.getElementById('sendBtn').textContent='⏳';
-        document.getElementById('sendBtn').disabled=true;
-        attachUrl=attach.type==='image'?await uploadToImgBB(attach.file):await(function(f){return new Promise(function(r){var rd=new FileReader();rd.onload=function(e){r(e.target.result);};rd.readAsDataURL(f);});})(attach.file);
-        document.getElementById('sendBtn').textContent='Envoyer 🚀';
-        document.getElementById('sendBtn').disabled=false;
-    }
-    var msgText=text||(attach.type==='image'?'📷 Photo':'📎 '+attach.name);
-    if(currentChatType==='public')sendPublicMessage(msgText,attachUrl,attachType,attachName);
-    else sendPM(msgText,attachUrl,attachType,attachName);
+    var text=input.value.trim();if(!text) return;
+    if(currentChatType==='public'){sendPublicMessage(text);input.value='';}
+    else sendPM();
 }
 document.getElementById('sendBtn').addEventListener('click',sendMessage);
 document.getElementById('messageInput').addEventListener('keypress',function(e){if(e.key==='Enter')sendMessage();});
