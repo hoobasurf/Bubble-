@@ -26,7 +26,7 @@
         .particles { position:fixed; inset:0; pointer-events:none; z-index:0; }
         .particle  { position:absolute; width:3px; height:3px; background:rgba(255,255,255,.5); border-radius:50%; animation:float 20s infinite ease-in-out; }
         @keyframes float { 0%,100%{transform:translateY(0) translateX(0);opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{transform:translateY(-100vh) translateX(50px);opacity:0} }
-        .app-wrapper { position:relative; z-index:1; max-width:1500px; margin:0 auto; padding:20px; min-height:100vh; display:flex; flex-direction:column; gap:20px; }
+        .app-wrapper { position:relative; z-index:1; width:100%; padding:20px; min-height:100vh; display:flex; flex-direction:column; gap:20px; }
         .chat-header { background:rgba(255,255,255,.05); backdrop-filter:blur(10px); border-radius:20px; padding:14px 28px; border:1px solid rgba(255,255,255,.15); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
         .theme-selector { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
         .theme-label    { color:white; font-weight:600; text-shadow:0 2px 5px rgba(0,0,0,.3); }
@@ -195,7 +195,9 @@
     #visioContainer.pip { width:280px; height:200px; bottom:16px; right:16px; }
 }
 @media (max-width:600px) {
-    .app-wrapper { padding:10px; gap:10px; }
+    .app-wrapper { padding:0; gap:0; }
+    .chat-header { margin:8px 8px 0 8px; border-radius:16px; }
+    .body-columns { margin:8px; }
     .chat-header { padding:10px 14px; }
     .theme-label { display:none; }
     .theme-btn, .theme-btn-custom, .user-profile-photo, .notif-toggle-btn, .arcade-btn { width:36px; height:36px; font-size:16px; }
