@@ -134,10 +134,8 @@
 
 ```
     /* ── Boutons photo & fichier ── */
-    .attach-btn { width:46px; height:46px; border-radius:50%; border:2px solid rgba(255,107,157,.6); background:linear-gradient(135deg,rgba(255,107,157,.15),rgba(192,111,255,.15)); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .3s; flex-shrink:0; position:relative; }
+    .attach-btn { width:46px; height:46px; border-radius:50%; border:2px solid rgba(255,107,157,.6); background:linear-gradient(135deg,rgba(255,107,157,.15),rgba(192,111,255,.15)); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .3s; flex-shrink:0; }
     .attach-btn:hover { transform:scale(1.15); border-color:rgba(255,107,157,1); background:linear-gradient(135deg,rgba(255,107,157,.35),rgba(192,111,255,.35)); box-shadow:0 0 18px rgba(255,107,157,.5); }
-    .attach-btn svg { pointer-events:none; }
-    .attach-btn input { position:absolute; opacity:0; width:46px; height:46px; cursor:pointer; top:0; left:0; border-radius:50%; }
     .attach-preview { display:none; align-items:center; gap:10px; width:100%; background:rgba(255,255,255,.08); border-radius:14px; padding:10px 14px; border:1px solid rgba(255,255,255,.15); }
     .attach-preview.visible { display:flex; }
     .attach-preview-img { max-height:60px; max-width:100px; border-radius:10px; object-fit:cover; border:2px solid rgba(255,107,157,.5); }
@@ -283,12 +281,13 @@
     </div>
     <div class="messages-area" id="messagesArea"></div>
     <div class="input-area">
-        <input type="file" id="attachFileInput" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none">
-        <button type="button" class="attach-btn" id="attachTriggerBtn" title="Photo ou fichier" onclick="document.getElementById('attachFileInput').click()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+        <input type="file" id="attachFileInput" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;position:static">
+        <label for="attachFileInput" class="attach-btn" title="Photo ou fichier">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <defs><linearGradient id="attachGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff6b9d"/><stop offset="100%" stop-color="#c06fff"/></linearGradient></defs>
+                <path stroke="url(#attachGrad)" d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
             </svg>
-        </button>
+        </label>
         <input type="text" class="message-input" id="messageInput" placeholder="Tapez votre message...">
         <button class="send-btn" id="sendBtn">Envoyer 🚀</button>
         <div class="attach-preview" id="attachPreview">
