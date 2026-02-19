@@ -134,10 +134,10 @@
 
 ```
     /* ── Boutons photo & fichier ── */
-    .attach-btn { width:46px; height:46px; border-radius:50%; border:2px solid rgba(255,107,157,.6); background:linear-gradient(135deg,rgba(255,107,157,.15),rgba(192,111,255,.15)); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .3s; flex-shrink:0; position:relative; overflow:hidden; box-shadow:0 0 10px rgba(255,107,157,.2); }
-    .attach-btn:hover { transform:scale(1.15); border-color:rgba(255,107,157,1); background:linear-gradient(135deg,rgba(255,107,157,.35),rgba(192,111,255,.35)); box-shadow:0 0 22px rgba(255,107,157,.6),0 0 8px rgba(192,111,255,.4); }
-    .attach-btn svg { pointer-events:none; filter:drop-shadow(0 0 4px rgba(255,107,157,.5)); }
-    .attach-btn input { position:absolute; opacity:0; width:100%; height:100%; cursor:pointer; top:0; left:0; }
+    .attach-btn { width:46px; height:46px; border-radius:50%; border:2px solid rgba(255,107,157,.6); background:linear-gradient(135deg,rgba(255,107,157,.15),rgba(192,111,255,.15)); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .3s; flex-shrink:0; position:relative; }
+    .attach-btn:hover { transform:scale(1.15); border-color:rgba(255,107,157,1); background:linear-gradient(135deg,rgba(255,107,157,.35),rgba(192,111,255,.35)); box-shadow:0 0 18px rgba(255,107,157,.5); }
+    .attach-btn svg { pointer-events:none; }
+    .attach-btn input { position:absolute; opacity:0; width:46px; height:46px; cursor:pointer; top:0; left:0; border-radius:50%; }
     .attach-preview { display:none; align-items:center; gap:10px; width:100%; background:rgba(255,255,255,.08); border-radius:14px; padding:10px 14px; border:1px solid rgba(255,255,255,.15); }
     .attach-preview.visible { display:flex; }
     .attach-preview-img { max-height:60px; max-width:100px; border-radius:10px; object-fit:cover; border:2px solid rgba(255,107,157,.5); }
@@ -148,80 +148,79 @@
     .msg-image:hover { transform:scale(1.02); }
     .msg-file-link { display:inline-flex; align-items:center; gap:8px; margin-top:10px; padding:10px 16px; background:rgba(255,255,255,.12); border-radius:12px; color:white; text-decoration:none; font-size:14px; border:1px solid rgba(255,255,255,.2); transition:all .2s; }
     .msg-file-link:hover { background:rgba(255,107,157,.25); border-color:rgba(255,107,157,.5); }
+
+/* ══ VISIO OVERLAY & CONTAINER ══ */
+#visioOverlay { position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:9000;display:none; }
+#visioOverlay.open { display:block; }
+#visioOverlay.pip-mode { background:transparent;backdrop-filter:none;pointer-events:none; }
+#visioContainer { position:fixed;z-index:9999;border-radius:20px;overflow:hidden;box-shadow:0 25px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.12);display:none;flex-direction:column;background:#0d0d1a;width:88vw;max-width:1100px;height:82vh;top:50%;left:50%;transform:translate(-50%,-50%); }
+#visioContainer.open { display:flex; }
+#visioContainer.pip { width:320px;height:240px;top:auto;left:auto;bottom:22px;right:22px;transform:none;border-radius:16px;cursor:move;box-shadow:0 12px 50px rgba(0,0,0,.9),0 0 0 2px rgba(255,107,157,.5); }
+#visioContainer.fullscreen { width:100vw;height:100vh;top:0;left:0;transform:none;border-radius:0;max-width:none; }
+#visioContainer.pip #visioRoomInfo { display:none; }
+#visioContainer.pip .vt-btn span:last-child { display:none; }
+#visioContainer.pip .vt-btn { padding:5px 9px;font-size:15px; }
+#visioContainer.pip #visioTitleBar { padding:6px 10px; }
+#visioContainer.pip #visioToolbar { padding:6px 10px;gap:6px; }
+#visioTitleBar { display:flex;align-items:center;gap:10px;padding:11px 16px;background:linear-gradient(90deg,rgba(255,107,157,.1),rgba(192,111,255,.1));border-bottom:1px solid rgba(255,255,255,.07);user-select:none;flex-shrink:0; }
+.vtb-icon  { font-size:18px; }
+.vtb-title { flex:1;color:white;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.vtb-win-btns { display:flex;gap:6px; }
+.vtb-win-btn { width:14px;height:14px;border-radius:50%;border:none;cursor:pointer;transition:opacity .2s,transform .2s;display:flex;align-items:center;justify-content:center;color:transparent;font-size:8px;font-weight:900; }
+.vtb-win-btn:hover { opacity:.8;transform:scale(1.2);color:rgba(0,0,0,.5); }
+.vtb-win-btn.close { background:#ff5f57; }
+.vtb-win-btn.mini  { background:#febc2e; }
+.vtb-win-btn.full  { background:#28c840; }
+#visioIframeWrap { flex:1;position:relative;background:#000;overflow:hidden; }
+#visioToolbar { display:flex;align-items:center;gap:8px;padding:9px 14px;background:rgba(0,0,0,.65);border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;flex-shrink:0; }
+.vt-btn { display:flex;align-items:center;gap:5px;padding:7px 13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);border-radius:9px;color:white;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap; }
+.vt-btn:hover  { background:rgba(255,255,255,.16);transform:translateY(-1px); }
+.vt-btn.active { background:linear-gradient(135deg,rgba(255,107,157,.3),rgba(192,111,255,.3));border-color:rgba(255,107,157,.5); }
+.vt-btn.danger { background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3); }
+.vt-btn.danger:hover { background:rgba(239,68,68,.3); }
+.vt-icon { font-size:16px; }
+
+/* Indicateur statut connexion visio */
+#visioConnStatus { font-size:11px; padding:3px 9px; border-radius:8px; font-weight:600; margin-left:auto; }
+#visioConnStatus.connecting { background:rgba(255,193,7,.2); color:#ffc107; border:1px solid rgba(255,193,7,.4); }
+#visioConnStatus.connected  { background:rgba(76,175,80,.2); color:#4caf50; border:1px solid rgba(76,175,80,.4); }
+#visioConnStatus.failed     { background:rgba(244,67,54,.2); color:#f44336; border:1px solid rgba(244,67,54,.4); }
+
+.users-panel::-webkit-scrollbar, .messages-area::-webkit-scrollbar { width:7px; }
+.users-panel::-webkit-scrollbar-track, .messages-area::-webkit-scrollbar-track { background:rgba(255,255,255,.05); border-radius:10px; }
+.users-panel::-webkit-scrollbar-thumb  { background:rgba(255,255,255,.2); border-radius:10px; }
+.messages-area::-webkit-scrollbar-thumb { background:linear-gradient(135deg,#ff6b9d,#c06fff); border-radius:10px; }
+
+@media (max-width:900px) {
+    .users-panel { width:260px; }
+    .toggle-sidebar-btn { left:10px; padding:12px 14px; }
+    .toggle-text { display:none; }
+    #visioContainer { width:96vw; height:75vh; }
+    #visioContainer.pip { width:280px; height:200px; bottom:16px; right:16px; }
+}
+@media (max-width:600px) {
+    .app-wrapper { padding:10px; gap:10px; }
+    .chat-header { padding:10px 14px; }
+    .theme-label { display:none; }
+    .theme-btn, .theme-btn-custom, .user-profile-photo, .notif-toggle-btn, .arcade-btn { width:36px; height:36px; font-size:16px; }
+    .toggle-sidebar-btn { left:6px; padding:10px 12px; border-radius:12px; }
+    .toggle-icon { font-size:20px; }
+    .chat-panel-header { padding:14px 16px; }
+    .messages-area { padding:16px; }
+    .input-area { padding:14px 16px; gap:10px; }
+    .message-input { min-width:0; padding:12px 16px; font-size:14px; }
+    .send-btn { padding:12px 20px; font-size:14px; }
+    .pm-msg-wrap { max-width:90%; }
+    .users-panel { position:fixed; top:0; left:0; height:100%; z-index:200; max-height:100vh; border-radius:0 20px 20px 0; width:280px; transform:translateX(0); transition:transform .4s cubic-bezier(.4,0,.2,1), opacity .4s; }
+    .users-panel.hidden { transform:translateX(-100%); width:280px; opacity:0; pointer-events:none; }
+    #visioContainer.pip { width:240px; height:180px; }
+    #visioToolbar { gap:6px; padding:8px 12px; }
+    .vt-btn { padding:7px 10px; font-size:13px; }
+    .vt-btn span { display:none; }
+}
 ```
 
-```
-    /* ══ VISIO OVERLAY & CONTAINER ══ */
-    #visioOverlay { position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:9000;display:none; }
-    #visioOverlay.open { display:block; }
-    #visioOverlay.pip-mode { background:transparent;backdrop-filter:none;pointer-events:none; }
-    #visioContainer { position:fixed;z-index:9999;border-radius:20px;overflow:hidden;box-shadow:0 25px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.12);display:none;flex-direction:column;background:#0d0d1a;width:88vw;max-width:1100px;height:82vh;top:50%;left:50%;transform:translate(-50%,-50%); }
-    #visioContainer.open { display:flex; }
-    #visioContainer.pip { width:320px;height:240px;top:auto;left:auto;bottom:22px;right:22px;transform:none;border-radius:16px;cursor:move;box-shadow:0 12px 50px rgba(0,0,0,.9),0 0 0 2px rgba(255,107,157,.5); }
-    #visioContainer.fullscreen { width:100vw;height:100vh;top:0;left:0;transform:none;border-radius:0;max-width:none; }
-    #visioContainer.pip #visioRoomInfo { display:none; }
-    #visioContainer.pip .vt-btn span:last-child { display:none; }
-    #visioContainer.pip .vt-btn { padding:5px 9px;font-size:15px; }
-    #visioContainer.pip #visioTitleBar { padding:6px 10px; }
-    #visioContainer.pip #visioToolbar { padding:6px 10px;gap:6px; }
-    #visioTitleBar { display:flex;align-items:center;gap:10px;padding:11px 16px;background:linear-gradient(90deg,rgba(255,107,157,.1),rgba(192,111,255,.1));border-bottom:1px solid rgba(255,255,255,.07);user-select:none;flex-shrink:0; }
-    .vtb-icon  { font-size:18px; }
-    .vtb-title { flex:1;color:white;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-    .vtb-win-btns { display:flex;gap:6px; }
-    .vtb-win-btn { width:14px;height:14px;border-radius:50%;border:none;cursor:pointer;transition:opacity .2s,transform .2s;display:flex;align-items:center;justify-content:center;color:transparent;font-size:8px;font-weight:900; }
-    .vtb-win-btn:hover { opacity:.8;transform:scale(1.2);color:rgba(0,0,0,.5); }
-    .vtb-win-btn.close { background:#ff5f57; }
-    .vtb-win-btn.mini  { background:#febc2e; }
-    .vtb-win-btn.full  { background:#28c840; }
-    #visioIframeWrap { flex:1;position:relative;background:#000;overflow:hidden; }
-    #visioToolbar { display:flex;align-items:center;gap:8px;padding:9px 14px;background:rgba(0,0,0,.65);border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;flex-shrink:0; }
-    .vt-btn { display:flex;align-items:center;gap:5px;padding:7px 13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);border-radius:9px;color:white;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap; }
-    .vt-btn:hover  { background:rgba(255,255,255,.16);transform:translateY(-1px); }
-    .vt-btn.active { background:linear-gradient(135deg,rgba(255,107,157,.3),rgba(192,111,255,.3));border-color:rgba(255,107,157,.5); }
-    .vt-btn.danger { background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3); }
-    .vt-btn.danger:hover { background:rgba(239,68,68,.3); }
-    .vt-icon { font-size:16px; }
-
-    /* Indicateur statut connexion visio */
-    #visioConnStatus { font-size:11px; padding:3px 9px; border-radius:8px; font-weight:600; margin-left:auto; }
-    #visioConnStatus.connecting { background:rgba(255,193,7,.2); color:#ffc107; border:1px solid rgba(255,193,7,.4); }
-    #visioConnStatus.connected  { background:rgba(76,175,80,.2); color:#4caf50; border:1px solid rgba(76,175,80,.4); }
-    #visioConnStatus.failed     { background:rgba(244,67,54,.2); color:#f44336; border:1px solid rgba(244,67,54,.4); }
-
-    .users-panel::-webkit-scrollbar, .messages-area::-webkit-scrollbar { width:7px; }
-    .users-panel::-webkit-scrollbar-track, .messages-area::-webkit-scrollbar-track { background:rgba(255,255,255,.05); border-radius:10px; }
-    .users-panel::-webkit-scrollbar-thumb  { background:rgba(255,255,255,.2); border-radius:10px; }
-    .messages-area::-webkit-scrollbar-thumb { background:linear-gradient(135deg,#ff6b9d,#c06fff); border-radius:10px; }
-
-    @media (max-width:900px) {
-        .users-panel { width:260px; }
-        .toggle-sidebar-btn { left:10px; padding:12px 14px; }
-        .toggle-text { display:none; }
-        #visioContainer { width:96vw; height:75vh; }
-        #visioContainer.pip { width:280px; height:200px; bottom:16px; right:16px; }
-    }
-    @media (max-width:600px) {
-        .app-wrapper { padding:10px; gap:10px; }
-        .chat-header { padding:10px 14px; }
-        .theme-label { display:none; }
-        .theme-btn, .theme-btn-custom, .user-profile-photo, .notif-toggle-btn, .arcade-btn { width:36px; height:36px; font-size:16px; }
-        .toggle-sidebar-btn { left:6px; padding:10px 12px; border-radius:12px; }
-        .toggle-icon { font-size:20px; }
-        .chat-panel-header { padding:14px 16px; }
-        .messages-area { padding:16px; }
-        .input-area { padding:14px 16px; gap:10px; }
-        .message-input { min-width:0; padding:12px 16px; font-size:14px; }
-        .send-btn { padding:12px 20px; font-size:14px; }
-        .pm-msg-wrap { max-width:90%; }
-        .users-panel { position:fixed; top:0; left:0; height:100%; z-index:200; max-height:100vh; border-radius:0 20px 20px 0; width:280px; transform:translateX(0); transition:transform .4s cubic-bezier(.4,0,.2,1), opacity .4s; }
-        .users-panel.hidden { transform:translateX(-100%); width:280px; opacity:0; pointer-events:none; }
-        #visioContainer.pip { width:240px; height:180px; }
-        #visioToolbar { gap:6px; padding:8px 12px; }
-        .vt-btn { padding:7px 10px; font-size:13px; }
-        .vt-btn span { display:none; }
-    }
 </style>
-```
 
 </head>
 <body class="theme-futuriste">
@@ -248,7 +247,6 @@
         </div>
     </div>
 
-```
 <button class="toggle-sidebar-btn" id="toggleSidebar">
     <span class="toggle-icon" id="toggleIcon">👥</span>
     <span class="toggle-text"  id="toggleText">Profils</span>
@@ -272,47 +270,49 @@
         <div class="user-list" id="profileList"></div>
     </div>
 
-    <div class="right-panel" id="rightPanel">
-        <div class="chat-panel-header">
-            <div class="chat-panel-header-avatar" id="chatHeaderAvatar">🌐</div>
-            <div class="chat-panel-header-info">
-                <div class="chat-panel-header-name"   id="chatHeaderName">Chat général</div>
-                <div class="chat-panel-header-status online" id="chatHeaderStatus">● Public</div>
-            </div>
-            <button class="visio-btn-header visible" id="visioBtn">📹 <span>Visio</span></button>
-            <button class="wizz-btn" id="wizzBtn" style="display:none;">⚡ WIZZ!</button>
+```
+<div class="right-panel" id="rightPanel">
+    <div class="chat-panel-header">
+        <div class="chat-panel-header-avatar" id="chatHeaderAvatar">🌐</div>
+        <div class="chat-panel-header-info">
+            <div class="chat-panel-header-name"   id="chatHeaderName">Chat général</div>
+            <div class="chat-panel-header-status online" id="chatHeaderStatus">● Public</div>
         </div>
-        <div class="messages-area" id="messagesArea"></div>
-        <div class="input-area">
-            <div class="attach-btn" title="Envoyer une photo">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                    <circle cx="12" cy="13" r="4"/>
-                </svg>
-                <input type="file" id="attachPhotoInput" accept="image/*">
-            </div>
-            <div class="attach-btn" title="Envoyer un fichier">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
-                </svg>
-                <input type="file" id="attachFileInput">
-            </div>
-            <input type="text" class="message-input" id="messageInput" placeholder="Tapez votre message...">
-            <button class="send-btn" id="sendBtn">Envoyer 🚀</button>
-            <div class="attach-preview" id="attachPreview">
-                <img class="attach-preview-img" id="attachPreviewImg" src="" alt="" style="display:none">
-                <span class="attach-preview-name" id="attachPreviewName"></span>
-                <button class="attach-preview-remove" id="attachPreviewRemove">✕</button>
-            </div>
-            <div class="bubble-color-row" id="bubbleColorPicker" style="display:none;">
-                <span class="bubble-color-label">🎨 Mes bulles :</span>
-                <div class="bubble-color-swatches" id="colorSwatches"></div>
-                <div class="color-swatch-custom" title="Couleur libre">✏️<input type="color" id="customColorInput"></div>
-            </div>
+        <button class="visio-btn-header visible" id="visioBtn">📹 <span>Visio</span></button>
+        <button class="wizz-btn" id="wizzBtn" style="display:none;">⚡ WIZZ!</button>
+    </div>
+    <div class="messages-area" id="messagesArea"></div>
+    <div class="input-area">
+        <div class="attach-btn" title="Envoyer une photo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+            </svg>
+            <input type="file" id="attachPhotoInput" accept="image/*">
+        </div>
+        <div class="attach-btn" title="Envoyer un fichier">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+            <input type="file" id="attachFileInput">
+        </div>
+        <input type="text" class="message-input" id="messageInput" placeholder="Tapez votre message...">
+        <button class="send-btn" id="sendBtn">Envoyer 🚀</button>
+        <div class="attach-preview" id="attachPreview">
+            <img class="attach-preview-img" id="attachPreviewImg" src="" alt="" style="display:none">
+            <span class="attach-preview-name" id="attachPreviewName"></span>
+            <button class="attach-preview-remove" id="attachPreviewRemove">✕</button>
+        </div>
+        <div class="bubble-color-row" id="bubbleColorPicker" style="display:none;">
+            <span class="bubble-color-label">🎨 Mes bulles :</span>
+            <div class="bubble-color-swatches" id="colorSwatches"></div>
+            <div class="color-swatch-custom" title="Couleur libre">✏️<input type="color" id="customColorInput"></div>
         </div>
     </div>
 </div>
 ```
+
+</div>
 
 </div>
 
